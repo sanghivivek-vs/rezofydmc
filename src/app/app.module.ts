@@ -4,6 +4,7 @@ import { IdentityModule } from '../modules/identity-org/identity.module';
 import { EnquiryModule } from '../modules/enquiry-intake/enquiry.module';
 import { CatalogModule } from '../modules/catalog/catalog.module';
 import { QuotationModule } from '../modules/quotation/quotation.module';
+import { ItineraryModule } from '../modules/itinerary/itinerary.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { QuotationModule } from '../modules/quotation/quotation.module';
     EnquiryModule,
     CatalogModule,
     QuotationModule,
+    ItineraryModule,
   ],
 })
 export class AppModule {}

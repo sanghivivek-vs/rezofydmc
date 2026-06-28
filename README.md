@@ -26,15 +26,19 @@ Built so far (Phase 1):
 - ✅ **Catalog & Suppliers** — suppliers, components, and rate cards (seasons,
   group-size slabs, child rules), tenant-scoped with role-gated edits; bridges
   rates into the costing engine (`src/modules/catalog/`).
+- ✅ **Itinerary Builder** — versioned itineraries with days and timed segments
+  (type, supplier, booking status validated against the org's configurable set,
+  optional catalog-component link); segment status changes are audited
+  (`src/modules/itinerary/`).
 - ✅ **Quotation** — `POST /v1/quotes` composes an enquiry's pax, the org's
   costing defaults, and catalog rates, prices them through the costing engine,
   and persists a versioned quote. The sell view is returned to everyone; the
   **owner-only margin view is gated server-side** (`src/modules/quotation/`).
   This closes the Phase-1 core loop: enquiry → catalog → priced quote.
 - ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/auth`, `/v1/org`,
-  `/v1/users`, `/v1/enquiries`, `/v1/suppliers`, `/v1/components`, `/v1/quotes`),
-  JWT-secured, an HMAC-signed + idempotent inbound webhook, consistent error
-  envelope, all e2e-tested.
+  `/v1/users`, `/v1/enquiries`, `/v1/suppliers`, `/v1/components`, `/v1/quotes`,
+  `/v1/itineraries`), JWT-secured, an HMAC-signed + idempotent inbound webhook,
+  consistent error envelope, all e2e-tested.
 - ✅ **Persistence (Prisma + PostgreSQL)** — schema + initial migration + tested
   row↔domain mapper. The generated Prisma client can't be produced in the build
   sandbox (egress policy blocks the engine download), so the running app/tests use

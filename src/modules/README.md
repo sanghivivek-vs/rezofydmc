@@ -22,8 +22,8 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | `identity-org`              | ✅ built    | Auth (JWT login + org bootstrap, scrypt passwords), users, roles, org settings. `JwtAuthGuard` + `RolesGuard`; Owner-only gates server-side. e2e-tested (ADR 0006). |
 | `enquiry-intake`            | ✅ built    | RFQ intake (manual + inbound webhook), triage, status machine, tenant-scoped, audited. NestJS REST API (now JWT-secured) + signed/idempotent webhook + error envelope, e2e-tested. Prisma schema/migration committed; DB-backed repo activates in a DB env (see `prisma/README.md`). |
 | `catalog`                   | ✅ built    | Suppliers, components, rate cards (seasons, slabs, child rules). JWT-secured REST, role-gated edits, tenant-scoped. Bridges rates into the costing engine (`listCostingRates`). e2e-tested. |
+| `itinerary`                 | ✅ built    | Versioned itineraries: days + timed segments (type, supplier, booking status validated against the org set, optional component link). `/v1/itineraries`, segment status updates audited. e2e-tested. |
 | agency-crm                  | ⏳ planned  | Counterparty records, contacts.                             |
-| itinerary-builder           | ⏳ planned  | Days, timed segments, reference-itinerary fidelity.         |
 | documents                   | ⏳ planned  | Itinerary + costing PDF generation, branding.               |
 | operations                  | ⏳ phase 2  | Bookings, confirmations, vouchers, payments.                |
 | integration                 | ⏳ planned  | API + webhooks to/from the Tour Agency platform (§6).       |

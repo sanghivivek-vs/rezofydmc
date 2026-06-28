@@ -1,0 +1,60 @@
+/**
+ * Itinerary Builder NestJS module (Build guide §4). In-memory infrastructure by
+ * default; composes Enquiry, Catalog, and Identity/Org via their interfaces.
+ */
+
+import { Module } from '@nestjs/common';
+import { systemClock } from '@common/clock/clock';
+import { uuidIdGenerator } from '@common/ids/id';
+import type { AuditSink } from '@common/audit/audit-log';
+import { LoggingAuditSink } from '@common/audit/logging-audit-sink';
+import { EnquiryService } from '@modules/enquiry-intake';
+import { CatalogService } from '@modules/catalog';
+import { OrgService } from '@modules/identity-org';
+import { IdentityModule } from '../identity-org/identity.module';
+import { EnquiryModule } from '../enquiry-intake/enquiry.module';
+import { CatalogModule } from '../catalog/catalog.module';
+import { ItineraryController } from './api/itinerary.controller';
+import { ITINERARY_AUDIT_SINK, ITINERARY_REPOSITORY } from './api/tokens';
+import {
+  InMemoryItineraryRepository,
+  type ItineraryRepository,
+} from './repository/itinerary.repository';
+import { ItineraryService } from './service/itinerary.service';
+
+@Module({
+  imports: [IdentityModule, EnquiryModule, CatalogModule],
+  controllers: [ItineraryController],
+  providers: [
+    { provide: ITINERARY_REPOSITORY, useClass: InMemoryItineraryRepository },
+    { provide: ITINERARY_AUDIT_SINK, useClass: LoggingAuditSink },
+    {
+      provide: ItineraryService,
+      inject: [
+        ITINERARY_REPOSITORY,
+        EnquiryService,
+        CatalogService,
+        OrgService,
+        ITINERARY_AUDIT_SINK,
+      ],
+      useFactory: (
+        repository: ItineraryRepository,
+        enquiries: EnquiryService,
+        catalog: CatalogService,
+        orgs: OrgService,
+        audit: AuditSink,
+      ) =>
+        new ItineraryService({
+          repository,
+          enquiries,
+          catalog,
+          orgs,
+          audit,
+          clock: systemClock,
+          idGenerator: uuidIdGenerator,
+        }),
+    },
+  ],
+  exports: [ItineraryService],
+})
+export class ItineraryModule {}

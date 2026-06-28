@@ -149,6 +149,23 @@ model Quote {
   @@map("quote")
 }
 
+// Itinerary (Build guide §3) ---------------------------------------------
+model Itinerary {
+  id        String   @id
+  orgId     String   @map("org_id")
+  enquiryId String   @map("enquiry_id")
+  version   Int
+  title     String?
+  // days: ItineraryDay[] (each with timed Segment[]) — stored as the aggregate
+  days      Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([orgId, enquiryId, version], name: "org_enquiry_version")
+  @@index([orgId, enquiryId])
+  @@map("itinerary")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")
