@@ -18,17 +18,13 @@ import { CatalogModule } from '../catalog/catalog.module';
 import { IntegrationModule } from '../integration/integration.module';
 import { ItineraryController } from './api/itinerary.controller';
 import { ITINERARY_AUDIT_SINK, ITINERARY_REPOSITORY } from './api/tokens';
-import {
-  InMemoryItineraryRepository,
-  type ItineraryRepository,
-} from './repository/itinerary.repository';
+import type { ItineraryRepository } from './repository/itinerary.repository';
 import { ItineraryService } from './service/itinerary.service';
 
 @Module({
   imports: [IdentityModule, EnquiryModule, CatalogModule, IntegrationModule],
   controllers: [ItineraryController],
   providers: [
-    { provide: ITINERARY_REPOSITORY, useClass: InMemoryItineraryRepository },
     { provide: ITINERARY_AUDIT_SINK, useClass: LoggingAuditSink },
     {
       provide: ItineraryService,

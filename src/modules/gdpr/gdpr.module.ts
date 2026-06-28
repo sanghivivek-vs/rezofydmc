@@ -16,14 +16,13 @@ import { EnquiryModule } from '../enquiry-intake/enquiry.module';
 import { ItineraryModule } from '../itinerary/itinerary.module';
 import { GdprController } from './api/gdpr.controller';
 import { CONSENT_REPOSITORY, GDPR_AUDIT_SINK } from './api/tokens';
-import { InMemoryConsentRepository, type ConsentRepository } from './repository/consent.repository';
+import type { ConsentRepository } from './repository/consent.repository';
 import { GdprService } from './service/gdpr.service';
 
 @Module({
   imports: [IdentityModule, EnquiryModule, ItineraryModule],
   controllers: [GdprController],
   providers: [
-    { provide: CONSENT_REPOSITORY, useClass: InMemoryConsentRepository },
     { provide: GDPR_AUDIT_SINK, useClass: LoggingAuditSink },
     {
       provide: GdprService,

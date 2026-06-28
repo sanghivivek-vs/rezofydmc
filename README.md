@@ -76,6 +76,7 @@ Key decisions are recorded as ADRs:
 - [0006 — Session auth: JWT + scrypt](docs/adr/0006-session-auth-jwt.md)
 - [0007 — Security hardening baseline](docs/adr/0007-security-hardening.md)
 - [0008 — GDPR technical controls](docs/adr/0008-gdpr-technical-controls.md)
+- [0009 — Env-swappable persistence (in-memory ⇄ PostgreSQL)](docs/adr/0009-postgresql-persistence-activation.md)
 
 ## The costing engine (§5)
 

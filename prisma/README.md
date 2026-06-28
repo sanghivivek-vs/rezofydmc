@@ -16,39 +16,31 @@ are real and unit-tested; only the generated client is deferred.
 ## Wiring it up (DB-enabled environment)
 
 ```bash
-export DATABASE_URL="postgresql://user:pass@localhost:5432/dmc"
-npx prisma generate          # produces @prisma/client
-npx prisma migrate deploy     # applies prisma/migrations/*
+docker compose up -d                      # local PostgreSQL (docker-compose.yml)
+export DATABASE_URL="postgresql://dmc:dmc@localhost:5432/dmc"
+npx prisma generate                        # produces @prisma/client
+npx prisma migrate deploy                  # applies prisma/migrations/*
+npm run typecheck:prisma                   # compile the Prisma layer (optional)
+PERSISTENCE=prisma JWT_SECRET=… WEBHOOK_SIGNING_SECRET=… OUTBOUND_WEBHOOK_SECRET=… \
+  npm run start:prisma                     # boot on PostgreSQL
 ```
 
-Then swap the in-memory providers in
-`src/modules/enquiry-intake/enquiry.module.ts` for the Prisma-backed ones in
-`prisma/repository/prisma-infra.ts`:
+That is the **entire** swap (ADR 0009): `PERSISTENCE=prisma` selects
+`prisma/composition/AppPrismaModule`, which binds the same repository tokens to
+the Prisma implementations via the `@Global` `PrismaPersistenceModule`. **No
+feature module changes** — they only inject the repository tokens.
 
-```ts
-import {
-  PrismaService,
-  PrismaEnquiryRepository,
-  PrismaIdempotencyStore,
-  PrismaAuditSink,
-} from '../../../prisma/repository/prisma-infra';
-
-providers: [
-  PrismaService,
-  { provide: ENQUIRY_REPOSITORY, useClass: PrismaEnquiryRepository },
-  { provide: IDEMPOTENCY_STORE, useClass: PrismaIdempotencyStore },
-  { provide: AUDIT_SINK, useClass: PrismaAuditSink },
-  // ...EnquiryService factory unchanged
-]
-```
-
-The `EnquiryService` and controllers do not change — that is the point of the
-repository seam.
+CI verifies this path: the `db-integration` job runs Postgres, `prisma generate`,
+`prisma migrate deploy`, and `typecheck:prisma`.
 
 ## Files
 
-- `schema.prisma` — models: `Enquiry`, `WebhookReceipt`, `AuditLog`.
-- `migrations/0001_init/migration.sql` — initial schema (never edit once applied;
-  add a new migration instead — Build guide §9).
-- `repository/prisma-infra.ts` — Prisma implementations of the repository,
-  idempotency store, and audit sink (compiled only when the client is generated).
+- `schema.prisma` — all models (Enquiry, Organization, User, Supplier, Component,
+  Rate, Quote, Itinerary, ConsentRecord, WebhookReceipt, AuditLog).
+- `migrations/000N_*/migration.sql` — versioned migrations (never edit an applied
+  one; add a new one — Build guide §9).
+- `repository/prisma-infra.ts` — Prisma implementations of every repository +
+  `PrismaService` + DB audit sink (compiled only when the client is generated).
+- `composition/prisma-persistence.module.ts` — `@Global` module binding the repo
+  tokens to Prisma.
+- `composition/app-prisma.module.ts` — the Prisma application composition.

@@ -31,3 +31,42 @@ jobs:
 
       - name: Test
         run: npm test -- --ci
+
+  db-integration:
+    name: Prisma persistence (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: dmc
+          POSTGRES_PASSWORD: dmc
+          POSTGRES_DB: dmc
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dmc"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://dmc:dmc@localhost:5432/dmc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Prisma + client
+        run: npm install --no-save prisma @prisma/client
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+      # Type-check the Prisma persistence layer (repos + composition) against the
+      # generated client and the real schema. This verifies the DB path compiles
+      # and the migrations apply, even though the default sandbox cannot.
+      - name: Typecheck Prisma layer
+        run: npm run typecheck:prisma

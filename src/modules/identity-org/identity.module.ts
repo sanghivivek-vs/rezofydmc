@@ -3,8 +3,8 @@
  * bootstrap), org settings, and user management. Exports TOKEN_SERVICE and the
  * guards so other modules can authenticate requests via the same session tokens.
  *
- * Infrastructure is in-memory by default; swap the repository providers for
- * Prisma-backed ones in a DB env (same pattern as enquiry-intake).
+ * Repositories come from the @Global persistence module (in-memory by default,
+ * Prisma in a DB env — ADR 0009). TOKEN_SERVICE and the guards are bound here.
  */
 
 import { Module } from '@nestjs/common';
@@ -16,8 +16,8 @@ import { AuthController } from './api/auth.controller';
 import { OrgController } from './api/org.controller';
 import { UserController } from './api/user.controller';
 import { ORG_REPOSITORY, TOKEN_SERVICE, USER_REPOSITORY } from './api/tokens';
-import { InMemoryOrgRepository, type OrgRepository } from './repository/org.repository';
-import { InMemoryUserRepository, type UserRepository } from './repository/user.repository';
+import type { OrgRepository } from './repository/org.repository';
+import type { UserRepository } from './repository/user.repository';
 import { OrgService } from './service/org.service';
 import { UserService } from './service/user.service';
 import { AuthService } from './service/auth.service';
@@ -30,8 +30,6 @@ import { RolesGuard } from '../../app/auth/roles.guard';
   imports: [ConfigModule, JwtModule.register({})],
   controllers: [AuthController, OrgController, UserController],
   providers: [
-    { provide: ORG_REPOSITORY, useClass: InMemoryOrgRepository },
-    { provide: USER_REPOSITORY, useClass: InMemoryUserRepository },
     { provide: TOKEN_SERVICE, useClass: JwtTokenService },
     {
       provide: OrgService,

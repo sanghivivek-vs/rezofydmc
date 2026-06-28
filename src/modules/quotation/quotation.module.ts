@@ -19,14 +19,13 @@ import { CatalogModule } from '../catalog/catalog.module';
 import { IntegrationModule } from '../integration/integration.module';
 import { QuoteController } from './api/quote.controller';
 import { QUOTE_AUDIT_SINK, QUOTE_REPOSITORY } from './api/tokens';
-import { InMemoryQuoteRepository, type QuoteRepository } from './repository/quote.repository';
+import type { QuoteRepository } from './repository/quote.repository';
 import { QuotationService } from './service/quotation.service';
 
 @Module({
   imports: [IdentityModule, EnquiryModule, CatalogModule, IntegrationModule],
   controllers: [QuoteController],
   providers: [
-    { provide: QUOTE_REPOSITORY, useClass: InMemoryQuoteRepository },
     { provide: QUOTE_AUDIT_SINK, useClass: LoggingAuditSink },
     {
       provide: QuotationService,

@@ -1,0 +1,25 @@
+# Local PostgreSQL for the Prisma persistence backend (ADR 0009).
+#   docker compose up -d
+#   export DATABASE_URL=postgresql://dmc:dmc@localhost:5432/dmc
+#   npx prisma generate && npx prisma migrate deploy
+#   PERSISTENCE=prisma JWT_SECRET=dev WEBHOOK_SIGNING_SECRET=dev \
+#     OUTBOUND_WEBHOOK_SECRET=dev npm run start:prisma
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dmc
+      POSTGRES_PASSWORD: dmc
+      POSTGRES_DB: dmc
+    ports:
+      - '5432:5432'
+    volumes:
+      - dmc-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dmc']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dmc-pgdata:
