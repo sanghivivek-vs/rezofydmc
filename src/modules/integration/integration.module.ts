@@ -11,6 +11,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { resolveSecret } from '@common/config/secrets';
 import { OUTBOUND_PUBLISHER } from '@common/integration/outbound';
 import { DEAD_LETTER_STORE, WEBHOOK_TRANSPORT } from './api/tokens';
 import { FetchWebhookTransport, type WebhookTransport } from './service/transport';
@@ -32,7 +33,10 @@ import { WebhookDispatcher } from './service/webhook-dispatcher';
       ) =>
         new WebhookDispatcher(transport, deadLetters, {
           url: config.get<string>('OUTBOUND_WEBHOOK_URL') ?? '',
-          secret: config.get<string>('OUTBOUND_WEBHOOK_SECRET') ?? 'dev-outbound-secret',
+          secret: resolveSecret(
+            config.get<string>('OUTBOUND_WEBHOOK_SECRET'),
+            'OUTBOUND_WEBHOOK_SECRET',
+          ),
         }),
     },
   ],

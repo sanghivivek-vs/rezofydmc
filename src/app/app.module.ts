@@ -7,10 +7,12 @@ import { QuotationModule } from '../modules/quotation/quotation.module';
 import { ItineraryModule } from '../modules/itinerary/itinerary.module';
 import { IntegrationModule } from '../modules/integration/integration.module';
 import { DocumentsModule } from '../modules/documents/documents.module';
+import { SecurityModule } from './security/security.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    SecurityModule,
     IntegrationModule,
     IdentityModule,
     EnquiryModule,

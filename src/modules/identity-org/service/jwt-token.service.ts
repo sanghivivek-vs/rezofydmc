@@ -6,6 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { resolveSecret } from '@common/config/secrets';
 import type { Role } from '@common/tenancy/tenant-context';
 import type { AuthClaims, TokenService } from './token.service';
 
@@ -18,7 +19,8 @@ export class JwtTokenService implements TokenService {
     private readonly jwt: JwtService,
     config: ConfigService,
   ) {
-    this.secret = config.get<string>('JWT_SECRET') ?? 'dev-insecure-secret-change-me';
+    // Fail-closed: a missing JWT secret is a hard error in production (ADR 0007).
+    this.secret = resolveSecret(config.get<string>('JWT_SECRET'), 'JWT_SECRET');
     this.ttl = config.get<string>('JWT_TTL') ?? '12h';
   }
 
