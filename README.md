@@ -43,6 +43,10 @@ Built so far (Phase 1):
   `quote.sent`; segment status changes emit `segment.status.updated`. The
   dispatcher signs (HMAC), retries with backoff, and dead-letters on exhaustion
   (`src/modules/integration/`, ADR 0005). Only the sell-side view is shared.
+- ✅ **Operations (Phase 2)** — accept/reject a quote (manual + signed inbound
+  `quote.accepted` webhook) creates a **Booking** (one item per included
+  component), tracks per-item supplier confirmation, derives **supplier POs**,
+  and reports the **pipeline** (`src/modules/operations/`).
 - ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/auth`, `/v1/org`,
   `/v1/users`, `/v1/enquiries`, `/v1/suppliers`, `/v1/components`, `/v1/quotes`
   (+ `/send`), `/v1/itineraries`), JWT-secured, an HMAC-signed + idempotent

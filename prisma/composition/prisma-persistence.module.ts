@@ -21,6 +21,7 @@ import {
 import { QUOTE_REPOSITORY } from '../../src/modules/quotation/api/tokens';
 import { ITINERARY_REPOSITORY } from '../../src/modules/itinerary/api/tokens';
 import { CONSENT_REPOSITORY } from '../../src/modules/gdpr/api/tokens';
+import { BOOKING_REPOSITORY } from '../../src/modules/operations/api/tokens';
 import {
   PrismaService,
   PrismaEnquiryRepository,
@@ -33,6 +34,7 @@ import {
   PrismaQuoteRepository,
   PrismaItineraryRepository,
   PrismaConsentRepository,
+  PrismaBookingRepository,
 } from '../repository/prisma-infra';
 
 const REPOSITORY_TOKENS = [
@@ -46,6 +48,7 @@ const REPOSITORY_TOKENS = [
   QUOTE_REPOSITORY,
   ITINERARY_REPOSITORY,
   CONSENT_REPOSITORY,
+  BOOKING_REPOSITORY,
 ];
 
 @Global()
@@ -66,6 +69,7 @@ const REPOSITORY_TOKENS = [
     { provide: QUOTE_REPOSITORY, useClass: PrismaQuoteRepository },
     { provide: ITINERARY_REPOSITORY, useClass: PrismaItineraryRepository },
     { provide: CONSENT_REPOSITORY, useClass: PrismaConsentRepository },
+    { provide: BOOKING_REPOSITORY, useClass: PrismaBookingRepository },
   ],
   exports: [...REPOSITORY_TOKENS, PrismaService],
 })

@@ -193,6 +193,60 @@ export class QuotationService {
     return quote;
   }
 
+  // ---- Acceptance lifecycle (consumed by Operations) -------------------
+
+  /** Mark a Sent/Draft quote Accepted. Audited. */
+  async markAccepted(ctx: TenantContext, id: string): Promise<QuoteView> {
+    return this.transition(ctx, id, 'Accepted', ['Draft', 'Sent', 'Under Revision']);
+  }
+
+  /** Mark a quote Rejected. Audited. */
+  async markRejected(ctx: TenantContext, id: string): Promise<QuoteView> {
+    return this.transition(ctx, id, 'Rejected', ['Draft', 'Sent', 'Under Revision']);
+  }
+
+  private async transition(
+    ctx: TenantContext,
+    id: string,
+    to: Quote['status'],
+    from: Quote['status'][],
+  ): Promise<QuoteView> {
+    const quote = await this.loadQuote(ctx, id);
+    if (quote.status === to) return this.redactForRole(ctx, quote); // idempotent
+    if (!from.includes(quote.status)) {
+      throw new BusinessRuleError(`Quote ${id} cannot move from "${quote.status}" to "${to}"`, {
+        status: quote.status,
+      });
+    }
+    const now = this.clock();
+    const saved = await this.quotes.save(ctx, { ...quote, status: to });
+    await this.audit.record({
+      orgId: ctx.orgId,
+      actorId: ctx.userId,
+      action: 'quote.status_changed',
+      subject: { type: 'Quote', id: saved.id },
+      before: { status: quote.status },
+      after: { status: to },
+      at: now,
+      requestId: ctx.requestId,
+    });
+    return this.redactForRole(ctx, saved);
+  }
+
+  /**
+   * The included lines' component refs (non-sensitive — no cost), for Operations
+   * to build a booking. Available to any role.
+   */
+  async listIncludedComponents(
+    ctx: TenantContext,
+    id: string,
+  ): Promise<Array<{ componentId: string; description: string }>> {
+    const quote = await this.loadQuote(ctx, id);
+    return quote.margin.lines
+      .filter((l) => l.inclusion === 'included')
+      .map((l) => ({ componentId: l.componentId, description: l.description }));
+  }
+
   async listByEnquiry(ctx: TenantContext, enquiryId: string): Promise<QuoteView[]> {
     const quotes = await this.quotes.listByEnquiry(ctx, enquiryId);
     return quotes.map((q) => this.redactForRole(ctx, q));

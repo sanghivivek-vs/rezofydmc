@@ -14,6 +14,7 @@ import { QuotationModule } from '../modules/quotation/quotation.module';
 import { ItineraryModule } from '../modules/itinerary/itinerary.module';
 import { DocumentsModule } from '../modules/documents/documents.module';
 import { GdprModule } from '../modules/gdpr/gdpr.module';
+import { OperationsModule } from '../modules/operations/operations.module';
 
 export const FEATURE_MODULES = [
   SecurityModule,
@@ -25,4 +26,5 @@ export const FEATURE_MODULES = [
   ItineraryModule,
   DocumentsModule,
   GdprModule,
+  OperationsModule,
 ];

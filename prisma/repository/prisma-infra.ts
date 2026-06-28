@@ -46,6 +46,8 @@ import type { Itinerary } from '../../src/modules/itinerary/domain/itinerary';
 import type { ItineraryRepository } from '../../src/modules/itinerary/repository/itinerary.repository';
 import type { ConsentRecord } from '../../src/modules/gdpr/domain/consent';
 import type { ConsentRepository } from '../../src/modules/gdpr/repository/consent.repository';
+import type { Booking } from '../../src/modules/operations/domain/booking';
+import type { BookingRepository } from '../../src/modules/operations/repository/booking.repository';
 
 const iso = (d: Date | string): string => (typeof d === 'string' ? d : d.toISOString());
 const date = (s: string): Date => new Date(s);
@@ -486,6 +488,63 @@ export class PrismaConsentRepository implements ConsentRepository {
     const rows = await this.prisma.consentRecord.findMany({
       where: { orgId: ctx.orgId, ...(subjectRef ? { subjectRef } : {}) },
     });
+    return rows.map((r) => this.toDomain(r as never));
+  }
+}
+
+@Injectable()
+export class PrismaBookingRepository implements BookingRepository {
+  constructor(private readonly prisma: PrismaService) {}
+  private toDomain(r: Record<string, unknown>): Booking {
+    return {
+      id: r.id as string,
+      orgId: r.orgId as string,
+      enquiryId: r.enquiryId as string,
+      quoteId: r.quoteId as string,
+      status: r.status as Booking['status'],
+      items: r.items as Booking['items'],
+      createdBy: r.createdBy as string,
+      createdAt: iso(r.createdAt as Date),
+      updatedAt: iso(r.updatedAt as Date),
+    };
+  }
+  private toRow(b: Booking): Record<string, unknown> {
+    return {
+      id: b.id,
+      orgId: b.orgId,
+      enquiryId: b.enquiryId,
+      quoteId: b.quoteId,
+      status: b.status,
+      items: b.items,
+      createdBy: b.createdBy,
+      createdAt: date(b.createdAt),
+      updatedAt: date(b.updatedAt),
+    };
+  }
+  async create(ctx: TenantContext, b: Booking): Promise<Booking> {
+    assertSameTenant(ctx, b);
+    const r = await this.prisma.booking.create({ data: this.toRow(b) as never });
+    return this.toDomain(r as never);
+  }
+  async save(ctx: TenantContext, b: Booking): Promise<Booking> {
+    assertSameTenant(ctx, b);
+    const r = await this.prisma.booking.upsert({
+      where: { id: b.id },
+      create: this.toRow(b) as never,
+      update: { status: b.status, items: b.items as never, updatedAt: date(b.updatedAt) },
+    });
+    return this.toDomain(r as never);
+  }
+  async findById(ctx: TenantContext, id: string): Promise<Booking | null> {
+    const r = await this.prisma.booking.findFirst({ where: { id, orgId: ctx.orgId } });
+    return r ? this.toDomain(r as never) : null;
+  }
+  async findByQuote(ctx: TenantContext, quoteId: string): Promise<Booking | null> {
+    const r = await this.prisma.booking.findFirst({ where: { orgId: ctx.orgId, quoteId } });
+    return r ? this.toDomain(r as never) : null;
+  }
+  async list(ctx: TenantContext): Promise<Booking[]> {
+    const rows = await this.prisma.booking.findMany({ where: { orgId: ctx.orgId } });
     return rows.map((r) => this.toDomain(r as never));
   }
 }

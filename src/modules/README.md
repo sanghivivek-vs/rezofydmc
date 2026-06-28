@@ -26,7 +26,7 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | `documents`                 | ✅ built    | Client quote+itinerary document and owner-only costing sheet via a `DocumentRenderer` port (HTML now, PDF swappable). `GET /v1/quotes/:id/document` & `/costing-sheet`. e2e-tested. |
 | agency-crm                  | ⏳ planned  | Counterparty records, contacts.                             |
 | documents                   | ⏳ planned  | Itinerary + costing PDF generation, branding.               |
-| operations                  | ⏳ phase 2  | Bookings, confirmations, vouchers, payments.                |
+| `operations`                | ✅ built    | Phase 2: quote accept/reject (manual + signed inbound webhook) → bookings, item confirmation, supplier POs, pipeline report. Vouchers/payments are follow-ups. |
 | integration                 | ⏳ planned  | API + webhooks to/from the Tour Agency platform (§6).       |
 | `integration`               | ✅ outbound | Signed, retrying, dead-lettered outbound webhook dispatcher (`quote.sent`, `segment.status.updated`) per ADR 0005. Inbound `enquiry.created` lives in enquiry-intake. |
 | `gdpr`                       | ✅ built    | Data-subject controls (ADR 0008): PII registry, DSAR export, right-to-erasure (anonymise in place), consent/lawful-basis records, retention sweep. Each context erases its own data; all access/erasure audited. `/v1/gdpr/*`, Owner-gated. |

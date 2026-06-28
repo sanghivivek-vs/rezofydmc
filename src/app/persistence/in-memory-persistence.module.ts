@@ -31,6 +31,8 @@ import { ITINERARY_REPOSITORY } from '@modules/itinerary/api/tokens';
 import { InMemoryItineraryRepository } from '@modules/itinerary/repository/itinerary.repository';
 import { CONSENT_REPOSITORY } from '@modules/gdpr/api/tokens';
 import { InMemoryConsentRepository } from '@modules/gdpr/repository/consent.repository';
+import { BOOKING_REPOSITORY } from '@modules/operations/api/tokens';
+import { InMemoryBookingRepository } from '@modules/operations/repository/booking.repository';
 
 const REPOSITORY_TOKENS = [
   ENQUIRY_REPOSITORY,
@@ -43,6 +45,7 @@ const REPOSITORY_TOKENS = [
   QUOTE_REPOSITORY,
   ITINERARY_REPOSITORY,
   CONSENT_REPOSITORY,
+  BOOKING_REPOSITORY,
 ];
 
 @Global()
@@ -58,6 +61,7 @@ const REPOSITORY_TOKENS = [
     { provide: QUOTE_REPOSITORY, useClass: InMemoryQuoteRepository },
     { provide: ITINERARY_REPOSITORY, useClass: InMemoryItineraryRepository },
     { provide: CONSENT_REPOSITORY, useClass: InMemoryConsentRepository },
+    { provide: BOOKING_REPOSITORY, useClass: InMemoryBookingRepository },
   ],
   exports: REPOSITORY_TOKENS,
 })

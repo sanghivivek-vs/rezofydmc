@@ -182,6 +182,24 @@ model ConsentRecord {
   @@map("consent_record")
 }
 
+// Operations: bookings (Build guide §3 Operations, §10 Phase 2) -----------
+model Booking {
+  id        String   @id
+  orgId     String   @map("org_id")
+  enquiryId String   @map("enquiry_id")
+  quoteId   String   @map("quote_id")
+  status    String
+  // items: BookingItem[]
+  items     Json
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([orgId, quoteId], name: "org_quote")
+  @@index([orgId, enquiryId])
+  @@map("booking")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")
