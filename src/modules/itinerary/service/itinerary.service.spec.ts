@@ -12,12 +12,20 @@ import { fixedClock } from '@common/clock/clock';
 import { sequentialIdGenerator } from '@common/ids/id';
 import { BusinessRuleError, NotFoundError } from '@common/errors/errors';
 import type { AuditEvent, AuditSink } from '@common/audit/audit-log';
+import type { OutboundPublisher } from '@common/integration/outbound';
 import type { TenantContext } from '@common/tenancy/tenant-context';
 
 class CapturingAuditSink implements AuditSink {
   readonly events: AuditEvent[] = [];
   async record(e: AuditEvent): Promise<void> {
     this.events.push(e);
+  }
+}
+
+class CapturingPublisher implements OutboundPublisher {
+  readonly published: Array<{ event: string; data: Record<string, unknown> }> = [];
+  async publish(event: string, data: Record<string, unknown>): Promise<void> {
+    this.published.push({ event, data });
   }
 }
 
@@ -42,6 +50,7 @@ async function setup() {
     idGenerator: sequentialIdGenerator(),
   });
   const audit = new CapturingAuditSink();
+  const publisher = new CapturingPublisher();
   const service = new ItineraryService({
     repository: new InMemoryItineraryRepository(),
     enquiries,
@@ -50,6 +59,7 @@ async function setup() {
     clock,
     idGenerator: sequentialIdGenerator(),
     audit,
+    publisher,
   });
 
   const org = await orgs.create({ name: 'Alpine', defaultCurrency: 'CHF' });
@@ -67,7 +77,7 @@ async function setup() {
     name: 'Jungfraujoch',
     unitBasis: 'per_pax',
   });
-  return { service, ctx, enquiry, component, audit };
+  return { service, ctx, enquiry, component, audit, publisher };
 }
 
 describe('ItineraryService', () => {
@@ -152,8 +162,8 @@ describe('ItineraryService', () => {
     ).rejects.toThrow(BusinessRuleError);
   });
 
-  it('updates a segment status and audits the change', async () => {
-    const { service, ctx, enquiry, audit } = await setup();
+  it('updates a segment status, audits it, and emits segment.status.updated', async () => {
+    const { service, ctx, enquiry, audit, publisher } = await setup();
     const itin = await service.create(ctx, { enquiryId: enquiry.id });
     await service.addDay(ctx, itin.id, { dayNumber: 1, date: '2026-07-01', headline: 'Day 1' });
     const built = await service.addSegment(ctx, itin.id, 1, {
@@ -171,6 +181,14 @@ describe('ItineraryService', () => {
     expect(statusEvents[0]).toMatchObject({
       before: { bookingStatus: 'Pending' },
       after: { bookingStatus: 'Confirmed' },
+    });
+
+    const outbound = publisher.published.find((p) => p.event === 'segment.status.updated');
+    expect(outbound?.data).toMatchObject({
+      segment_id: segId,
+      day_number: 1,
+      booking_status: 'Confirmed',
+      agency_id: 'AG-1',
     });
 
     await expect(service.updateSegmentStatus(ctx, itin.id, 'nope', 'Confirmed')).rejects.toThrow(

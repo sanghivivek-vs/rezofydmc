@@ -5,10 +5,12 @@ import { EnquiryModule } from '../modules/enquiry-intake/enquiry.module';
 import { CatalogModule } from '../modules/catalog/catalog.module';
 import { QuotationModule } from '../modules/quotation/quotation.module';
 import { ItineraryModule } from '../modules/itinerary/itinerary.module';
+import { IntegrationModule } from '../modules/integration/integration.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    IntegrationModule,
     IdentityModule,
     EnquiryModule,
     CatalogModule,

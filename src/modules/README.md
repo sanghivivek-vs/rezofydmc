@@ -27,6 +27,7 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | documents                   | ⏳ planned  | Itinerary + costing PDF generation, branding.               |
 | operations                  | ⏳ phase 2  | Bookings, confirmations, vouchers, payments.                |
 | integration                 | ⏳ planned  | API + webhooks to/from the Tour Agency platform (§6).       |
+| `integration`               | ✅ outbound | Signed, retrying, dead-lettered outbound webhook dispatcher (`quote.sent`, `segment.status.updated`) per ADR 0005. Inbound `enquiry.created` lives in enquiry-intake. |
 | notifications               | ⏳ planned  | In-app + email events.                                      |
 | reporting                   | ⏳ planned  | Pipeline, win/loss, margin by enquiry.                      |
 

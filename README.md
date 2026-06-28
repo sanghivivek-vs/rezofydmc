@@ -35,10 +35,14 @@ Built so far (Phase 1):
   and persists a versioned quote. The sell view is returned to everyone; the
   **owner-only margin view is gated server-side** (`src/modules/quotation/`).
   This closes the Phase-1 core loop: enquiry → catalog → priced quote.
+- ✅ **Integration (outbound)** — `POST /v1/quotes/:id/send` emits a signed
+  `quote.sent`; segment status changes emit `segment.status.updated`. The
+  dispatcher signs (HMAC), retries with backoff, and dead-letters on exhaustion
+  (`src/modules/integration/`, ADR 0005). Only the sell-side view is shared.
 - ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/auth`, `/v1/org`,
-  `/v1/users`, `/v1/enquiries`, `/v1/suppliers`, `/v1/components`, `/v1/quotes`,
-  `/v1/itineraries`), JWT-secured, an HMAC-signed + idempotent inbound webhook,
-  consistent error envelope, all e2e-tested.
+  `/v1/users`, `/v1/enquiries`, `/v1/suppliers`, `/v1/components`, `/v1/quotes`
+  (+ `/send`), `/v1/itineraries`), JWT-secured, an HMAC-signed + idempotent
+  inbound webhook, consistent error envelope, all e2e-tested.
 - ✅ **Persistence (Prisma + PostgreSQL)** — schema + initial migration + tested
   row↔domain mapper. The generated Prisma client can't be produced in the build
   sandbox (egress policy blocks the engine download), so the running app/tests use

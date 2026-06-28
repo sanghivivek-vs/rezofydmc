@@ -13,6 +13,7 @@ import type { Clock } from '@common/clock/clock';
 import type { IdGenerator } from '@common/ids/id';
 import type { AuditSink } from '@common/audit/audit-log';
 import { NullAuditSink } from '@common/audit/audit-log';
+import { type OutboundPublisher, NullOutboundPublisher } from '@common/integration/outbound';
 import { EnquiryService } from '@modules/enquiry-intake';
 import { CatalogService } from '@modules/catalog';
 import { OrgService } from '@modules/identity-org';
@@ -35,6 +36,7 @@ export interface ItineraryServiceDeps {
   readonly clock: Clock;
   readonly idGenerator: IdGenerator;
   readonly audit?: AuditSink;
+  readonly publisher?: OutboundPublisher;
 }
 
 export class ItineraryService {
@@ -45,6 +47,7 @@ export class ItineraryService {
   private readonly clock: Clock;
   private readonly newId: IdGenerator;
   private readonly audit: AuditSink;
+  private readonly publisher: OutboundPublisher;
 
   constructor(deps: ItineraryServiceDeps) {
     this.repo = deps.repository;
@@ -54,6 +57,7 @@ export class ItineraryService {
     this.clock = deps.clock;
     this.newId = deps.idGenerator;
     this.audit = deps.audit ?? new NullAuditSink();
+    this.publisher = deps.publisher ?? new NullOutboundPublisher();
   }
 
   async create(ctx: TenantContext, input: CreateItineraryInput): Promise<Itinerary> {
@@ -150,12 +154,12 @@ export class ItineraryService {
     const itinerary = await this.getById(ctx, itineraryId);
     const status = await this.resolveBookingStatus(ctx, bookingStatus, true);
 
-    let found: { from: string } | undefined;
+    let found: { from: string; dayNumber: number; supplier?: string } | undefined;
     const days = itinerary.days.map((d) => ({
       ...d,
       segments: d.segments.map((s) => {
         if (s.id !== segmentId) return s;
-        found = { from: s.bookingStatus };
+        found = { from: s.bookingStatus, dayNumber: d.dayNumber, supplier: s.supplier };
         return { ...s, bookingStatus: status };
       }),
     }));
@@ -173,6 +177,22 @@ export class ItineraryService {
       at: now,
       requestId: ctx.requestId,
     });
+
+    // Outbound segment.status.updated (Build guide §6).
+    const enquiry = await this.enquiries.getById(ctx, itinerary.enquiryId);
+    await this.publisher.publish(
+      'segment.status.updated',
+      {
+        enquiry_external_id: enquiry.enquiryExternalId ?? enquiry.id,
+        agency_id: enquiry.agencyId,
+        segment_id: segmentId,
+        day_number: found.dayNumber,
+        booking_status: status,
+        supplier: found.supplier,
+      },
+      `${segmentId}:${status}:${now}`,
+      now,
+    );
     return saved;
   }
 

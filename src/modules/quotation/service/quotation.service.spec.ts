@@ -13,9 +13,17 @@ import { sequentialIdGenerator } from '@common/ids/id';
 import { money } from '@common/money/money';
 import { BusinessRuleError, ValidationError } from '@common/errors/errors';
 import type { TenantContext } from '@common/tenancy/tenant-context';
+import type { OutboundPublisher } from '@common/integration/outbound';
 import type { CostLineInput, Rate as CostingRate } from '@modules/costing';
 
 const clock = fixedClock('2026-06-28T10:00:00.000Z');
+
+class CapturingPublisher implements OutboundPublisher {
+  readonly published: Array<{ event: string; data: Record<string, unknown>; key: string }> = [];
+  async publish(event: string, data: Record<string, unknown>, key: string): Promise<void> {
+    this.published.push({ event, data, key });
+  }
+}
 
 async function setup() {
   const orgs = new OrgService({
@@ -35,6 +43,7 @@ async function setup() {
     clock,
     idGenerator: sequentialIdGenerator(),
   });
+  const publisher = new CapturingPublisher();
   const quotation = new QuotationService({
     quotes: new InMemoryQuoteRepository(),
     enquiries,
@@ -42,6 +51,7 @@ async function setup() {
     orgs,
     clock,
     idGenerator: sequentialIdGenerator(),
+    publisher,
   });
 
   const org = await orgs.create({
@@ -73,7 +83,7 @@ async function setup() {
     validTo: '2026-12-31',
   });
 
-  return { quotation, owner, sales, enquiry, component };
+  return { quotation, owner, sales, enquiry, component, publisher };
 }
 
 describe('QuotationService.createQuote', () => {
@@ -137,6 +147,32 @@ describe('QuotationService.createQuote', () => {
     });
     // 20000 cost * 1.5 = 30000
     expect(quote.sell.total).toEqual(money(30000, 'CHF'));
+  });
+
+  it('sends a draft quote: marks it Sent and emits quote.sent (sell-side only)', async () => {
+    const { quotation, owner, enquiry, component, publisher } = await setup();
+    const created = await quotation.createQuote(owner, {
+      enquiryId: enquiry.id,
+      lines: [{ componentId: component.id, travelDate: '2026-07-01', inclusion: 'included' }],
+    });
+
+    const sent = await quotation.sendQuote(owner, created.id);
+    expect(sent.status).toBe('Sent');
+
+    const event = publisher.published.find((p) => p.event === 'quote.sent');
+    expect(event).toBeDefined();
+    expect(event?.key).toBe(`${created.id}:sent`);
+    expect(event?.data).toMatchObject({
+      quote_external_id: created.id,
+      agency_id: 'AG-1',
+      currency: 'CHF',
+      total: { amount_minor: 24000, currency: 'CHF' },
+    });
+    // The outbound payload carries no margin data.
+    expect(JSON.stringify(event?.data)).not.toContain('totalMargin');
+
+    // Re-sending an already-Sent quote is rejected.
+    await expect(quotation.sendQuote(owner, created.id)).rejects.toThrow(BusinessRuleError);
   });
 
   it('rejects an empty line set and an out-of-season travel date', async () => {

@@ -7,6 +7,7 @@ import type { Quote } from '../domain/quote';
 
 export interface QuoteRepository {
   create(ctx: TenantContext, quote: Quote): Promise<Quote>;
+  save(ctx: TenantContext, quote: Quote): Promise<Quote>;
   findById(ctx: TenantContext, id: string): Promise<Quote | null>;
   listByEnquiry(ctx: TenantContext, enquiryId: string): Promise<Quote[]>;
   /** Highest existing version for an enquiry (0 if none). */
@@ -18,6 +19,14 @@ export class InMemoryQuoteRepository implements QuoteRepository {
 
   async create(ctx: TenantContext, quote: Quote): Promise<Quote> {
     assertSameTenant(ctx, quote);
+    this.store.set(quote.id, quote);
+    return quote;
+  }
+
+  async save(ctx: TenantContext, quote: Quote): Promise<Quote> {
+    assertSameTenant(ctx, quote);
+    const existing = this.store.get(quote.id);
+    if (existing) assertSameTenant(ctx, existing);
     this.store.set(quote.id, quote);
     return quote;
   }

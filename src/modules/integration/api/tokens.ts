@@ -1,0 +1,2 @@
+export const WEBHOOK_TRANSPORT = Symbol('WEBHOOK_TRANSPORT');
+export const DEAD_LETTER_STORE = Symbol('DEAD_LETTER_STORE');

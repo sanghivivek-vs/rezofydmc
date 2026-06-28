@@ -33,6 +33,12 @@ export class QuoteController {
     return this.quotes.getById(ctx, id);
   }
 
+  @Post(':id/send')
+  @Roles('Owner', 'Sales', 'Ops')
+  async send(@CurrentTenant() ctx: TenantContext, @Param('id') id: string) {
+    return this.quotes.sendQuote(ctx, id);
+  }
+
   @Get()
   async list(@CurrentTenant() ctx: TenantContext, @Query('enquiryId') enquiryId: string) {
     if (!enquiryId) {
