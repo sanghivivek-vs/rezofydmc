@@ -1,11 +1,12 @@
 import { type FormEvent, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError, getToken } from '../api/client';
 import type { Component, Enquiry, Quote } from '../api/types';
 import { Badge, Button, Card, ErrorText, Field, Input, money } from '../components/ui';
 
 export function EnquiryDetailPage() {
   const { id = '' } = useParams();
+  const navigate = useNavigate();
   const [enquiry, setEnquiry] = useState<Enquiry | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [components, setComponents] = useState<Component[]>([]);
@@ -55,6 +56,16 @@ export function EnquiryDetailPage() {
     }
   }
 
+  async function onAccept(quoteId: string) {
+    setError('');
+    try {
+      const booking = await api.acceptQuote(quoteId);
+      navigate(`/bookings/${booking.id}`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to accept');
+    }
+  }
+
   // The document endpoint is authenticated, so fetch with the bearer token and
   // open the returned HTML in a new tab.
   async function openDocument(quoteId: string) {
@@ -101,6 +112,9 @@ export function EnquiryDetailPage() {
                     Document
                   </Button>
                   {q.status === 'Draft' && <Button onClick={() => onSend(q.id)}>Send</Button>}
+                  {(q.status === 'Draft' || q.status === 'Sent') && (
+                    <Button onClick={() => onAccept(q.id)}>Accept</Button>
+                  )}
                 </div>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-4">

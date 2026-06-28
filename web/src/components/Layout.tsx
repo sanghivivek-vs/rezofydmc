@@ -22,6 +22,12 @@ export function Layout() {
               <NavLink to="/catalog" className={linkClass}>
                 Catalog
               </NavLink>
+              <NavLink to="/bookings" className={linkClass}>
+                Bookings
+              </NavLink>
+              <NavLink to="/reports" className={linkClass}>
+                Reports
+              </NavLink>
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">

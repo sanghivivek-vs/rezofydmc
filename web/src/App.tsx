@@ -5,6 +5,9 @@ import { LoginPage } from './pages/LoginPage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { EnquiryDetailPage } from './pages/EnquiryDetailPage';
 import { CatalogPage } from './pages/CatalogPage';
+import { BookingsPage } from './pages/BookingsPage';
+import { BookingDetailPage } from './pages/BookingDetailPage';
+import { ReportsPage } from './pages/ReportsPage';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -26,6 +29,9 @@ export function App() {
         <Route path="/enquiries" element={<EnquiriesPage />} />
         <Route path="/enquiries/:id" element={<EnquiryDetailPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
+        <Route path="/bookings" element={<BookingsPage />} />
+        <Route path="/bookings/:id" element={<BookingDetailPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/enquiries" replace />} />
     </Routes>

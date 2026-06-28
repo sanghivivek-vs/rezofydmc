@@ -1,10 +1,13 @@
 import type {
+  Booking,
   Component,
   Enquiry,
   LoginResult,
+  PipelineReport,
   PublicUser,
   Quote,
   Supplier,
+  SupplierPO,
 } from './types';
 
 const TOKEN_KEY = 'dmc.token';
@@ -91,4 +94,17 @@ export const api = {
   }) => request<Quote>('POST', '/v1/quotes', input),
   sendQuote: (id: string) => request<Quote>('POST', `/v1/quotes/${id}/send`),
   quoteDocumentUrl: (id: string) => `/v1/quotes/${id}/document`,
+
+  // Operations
+  acceptQuote: (id: string) => request<Booking>('POST', `/v1/quotes/${id}/accept`),
+  rejectQuote: (id: string) => request<{ rejected: boolean }>('POST', `/v1/quotes/${id}/reject`),
+  listBookings: () => request<Booking[]>('GET', '/v1/bookings'),
+  getBooking: (id: string) => request<Booking>('GET', `/v1/bookings/${id}`),
+  confirmBookingItem: (bookingId: string, itemId: string, confirmationRef: string) =>
+    request<Booking>('POST', `/v1/bookings/${bookingId}/items/${itemId}/confirm`, {
+      confirmationRef,
+    }),
+  supplierPOs: (bookingId: string) =>
+    request<SupplierPO[]>('GET', `/v1/bookings/${bookingId}/supplier-pos`),
+  pipeline: () => request<PipelineReport>('GET', '/v1/reports/pipeline'),
 };

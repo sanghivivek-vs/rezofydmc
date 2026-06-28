@@ -81,3 +81,38 @@ export interface LoginResult {
   token: string;
   user: PublicUser;
 }
+
+export type BookingItemStatus = 'Pending' | 'Confirmed' | 'Cancelled';
+
+export interface BookingItem {
+  id: string;
+  componentId?: string;
+  description: string;
+  supplierId?: string;
+  supplierName?: string;
+  status: BookingItemStatus;
+  confirmationRef?: string;
+}
+
+export interface Booking {
+  id: string;
+  enquiryId: string;
+  quoteId: string;
+  status: 'Confirming' | 'Confirmed' | 'Cancelled';
+  items: BookingItem[];
+  createdAt: string;
+}
+
+export interface SupplierPO {
+  supplierId: string;
+  supplierName: string;
+  bookingId: string;
+  items: { itemId: string; description: string; status: BookingItemStatus }[];
+}
+
+export interface PipelineReport {
+  byStatus: Record<string, number>;
+  total: number;
+  won: number;
+  lost: number;
+}
