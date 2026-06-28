@@ -23,9 +23,13 @@ Built so far (Phase 1):
 - ✅ **Identity & Org** — JWT login + org bootstrap (scrypt password hashing),
   users, roles, org settings; `JwtAuthGuard` + `RolesGuard` with Owner-only gates
   enforced server-side (`src/modules/identity-org/`, ADR 0006).
+- ✅ **Catalog & Suppliers** — suppliers, components, and rate cards (seasons,
+  group-size slabs, child rules), tenant-scoped with role-gated edits; bridges
+  rates into the costing engine (`src/modules/catalog/`).
 - ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/auth`, `/v1/org`,
-  `/v1/users`, `/v1/enquiries`), JWT-secured, an HMAC-signed + idempotent inbound
-  webhook, consistent error envelope, all e2e-tested.
+  `/v1/users`, `/v1/enquiries`, `/v1/suppliers`, `/v1/components`), JWT-secured, an
+  HMAC-signed + idempotent inbound webhook, consistent error envelope, all
+  e2e-tested.
 - ✅ **Persistence (Prisma + PostgreSQL)** — schema + initial migration + tested
   row↔domain mapper. The generated Prisma client can't be produced in the build
   sandbox (egress policy blocks the engine download), so the running app/tests use

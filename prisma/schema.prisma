@@ -78,6 +78,58 @@ model User {
   @@map("app_user")
 }
 
+// Catalog & Suppliers (Build guide §3, §5) -------------------------------
+model Supplier {
+  id        String   @id
+  orgId     String   @map("org_id")
+  name      String
+  type      String?
+  contact   String?
+  currency  String
+  region    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId])
+  @@map("supplier")
+}
+
+model Component {
+  id         String   @id
+  orgId      String   @map("org_id")
+  type       String
+  supplierId String   @map("supplier_id")
+  name       String
+  unitBasis  String   @map("unit_basis")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId])
+  @@index([orgId, supplierId])
+  @@map("component")
+}
+
+model Rate {
+  id                String   @id
+  orgId             String   @map("org_id")
+  componentId       String   @map("component_id")
+  unitBasis         String   @map("unit_basis")
+  netAmountMinor    Int      @map("net_amount_minor")
+  netCurrency       String   @map("net_currency")
+  validFrom         DateTime @map("valid_from")
+  validTo           DateTime @map("valid_to")
+  season            String?
+  // childRules: ChildRule[]; slabs: { minPax, maxPax, net{amountMinor,currency} }[]
+  childRules        Json?    @map("child_rules")
+  slabs             Json?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId, componentId])
+  @@map("rate")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")
