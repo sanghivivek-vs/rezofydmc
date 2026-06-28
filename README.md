@@ -11,15 +11,26 @@ change; see [`CLAUDE.md`](./CLAUDE.md) for the working rules.
 
 ## Status
 
-First vertical slice: **foundation + Costing & Quotation engine**.
+Built so far (Phase 1):
 
 - ✅ Shared core primitives — `Money` (integer minor units), multi-tenancy,
-  errors, audit contract (`src/common/`).
+  errors, audit, clock, ids (`src/common/`).
 - ✅ **Costing & Quotation engine** — the highest-risk module (§5), built as pure,
   deterministic TypeScript with comprehensive unit tests (`src/modules/costing/`).
+- ✅ **Enquiry Intake** — manual + inbound-webhook RFQ intake, status state
+  machine, triage, tenant-scoped repository, audited mutations
+  (`src/modules/enquiry-intake/`).
+- ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/enquiries`), an HMAC-signed
+  + idempotent inbound webhook, tenant guard, consistent error envelope, all
+  e2e-tested.
+- ✅ **Persistence (Prisma + PostgreSQL)** — schema + initial migration + tested
+  row↔domain mapper. The generated Prisma client can't be produced in the build
+  sandbox (egress policy blocks the engine download), so the running app/tests use
+  an in-memory repository; the DB-backed repo activates in a DB env — see
+  [`prisma/README.md`](./prisma/README.md).
 - ✅ ADRs (`docs/adr/`), integration JSON Schemas (`docs/integration/`), CI.
-- ⏳ Identity/Org, Enquiry intake, Itinerary builder, Catalog, Documents,
-  Integration layer, etc. — see [`src/modules/README.md`](./src/modules/README.md).
+- ⏳ Identity/Org, Itinerary builder, Catalog, Documents, full Integration layer,
+  etc. — see [`src/modules/README.md`](./src/modules/README.md).
 
 ## Architecture
 
@@ -66,13 +77,33 @@ result.margin; // OWNER ONLY — gated at the service boundary
 
 ```bash
 npm install
-npm test          # jest
+npm test          # jest (unit + e2e)
 npm run typecheck # tsc --noEmit
 npm run lint      # eslint
 npm run format    # prettier --write
+npm run start:dev # boot the API (in-memory persistence) on :3000
 ```
 
 Requires Node ≥ 20.
+
+### Running the API
+
+```bash
+WEBHOOK_SIGNING_SECRET=dev-secret npm run start:dev
+
+# create an enquiry (tenant headers are provisional until the Identity module)
+curl -X POST localhost:3000/v1/enquiries \
+  -H 'content-type: application/json' \
+  -H 'x-org-id: org-A' -H 'x-user-id: u1' -H 'x-role: Sales' \
+  -d '{"agencyId":"AG1","destinations":["Switzerland"],
+       "pax":{"adults":2,"children":[],"infants":0},
+       "quoteDeadline":"2026-06-15T00:00:00Z"}'
+```
+
+The inbound webhook (`POST /v1/integration/webhooks/enquiry`) requires an
+`x-signature` HMAC-SHA256 of the raw body keyed by `WEBHOOK_SIGNING_SECRET`, plus
+`x-org-id`. To use PostgreSQL instead of the in-memory store, see
+[`prisma/README.md`](./prisma/README.md).
 
 ## Decisions still open
 

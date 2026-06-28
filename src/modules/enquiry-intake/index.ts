@@ -12,3 +12,6 @@ export { EnquiryService, type EnquiryServiceDeps } from './service/enquiry.servi
 export { mapInboundEnquiry, type InboundEnquiryData } from './service/inbound-mapper';
 export type { EnquiryRepository } from './repository/enquiry.repository';
 export { InMemoryEnquiryRepository } from './repository/in-memory-enquiry.repository';
+export type { IdempotencyStore, IdempotencyRecord } from './repository/idempotency-store';
+export { InMemoryIdempotencyStore } from './repository/idempotency-store';
+export { EnquiryModule } from './enquiry.module';

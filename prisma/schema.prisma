@@ -1,0 +1,81 @@
+// DMC Platform — Prisma schema (Build guide §9 data model).
+//
+// Provider: PostgreSQL. Money is stored as integer minor units + ISO currency
+// (Build guide §0). Every domain row is scoped by org_id (Build guide §0, §9);
+// tenant scoping is applied in the repository layer (ADR 0004).
+//
+// NOTE: Prisma client generation requires downloading engine binaries, which the
+// build sandbox blocks at the egress policy. Generate + migrate in a DB-enabled
+// environment:  `npx prisma generate && npx prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Enquiry {
+  id                  String    @id
+  orgId               String    @map("org_id")
+  enquiryExternalId   String?   @map("enquiry_external_id")
+  agencyId            String    @map("agency_id")
+  source              String
+
+  destinations        String[]
+  dateRange           Json?     @map("date_range")
+  durationDays        Int?      @map("duration_days")
+  pax                 Json
+  rooming             Json?
+  hotelCategory       String?   @map("hotel_category")
+  namedHotels         String[]  @map("named_hotels")
+  mealPreference      String?   @map("meal_preference")
+  transportPreference Json?     @map("transport_preference")
+  budgetAmountMinor   Int?      @map("budget_amount_minor")
+  budgetCurrency      String?   @map("budget_currency")
+  mustSeeInclusions   String[]  @map("must_see_inclusions")
+  specialRequirements String?   @map("special_requirements")
+  quoteDeadline       DateTime  @map("quote_deadline")
+
+  status              String
+  assignedToUserId    String?   @map("assigned_to_user_id")
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Tenant-scoped uniqueness of the shared external id.
+  @@unique([orgId, enquiryExternalId], name: "org_external_id")
+  @@index([orgId, status])
+  @@map("enquiry")
+}
+
+// Idempotency receipts for inbound webhooks (Build guide §6).
+model WebhookReceipt {
+  orgId          String   @map("org_id")
+  idempotencyKey String   @map("idempotency_key")
+  enquiryId      String   @map("enquiry_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@id([orgId, idempotencyKey])
+  @@map("webhook_receipt")
+}
+
+// Mandatory audit trail for pricing/status mutations (Build guide §9).
+model AuditLog {
+  id          String   @id @default(uuid())
+  orgId       String   @map("org_id")
+  actorId     String   @map("actor_id")
+  action      String
+  subjectType String   @map("subject_type")
+  subjectId   String   @map("subject_id")
+  before      Json?
+  after       Json?
+  requestId   String?  @map("request_id")
+  at          DateTime
+
+  @@index([orgId, action])
+  @@index([orgId, subjectType, subjectId])
+  @@map("audit_log")
+}

@@ -18,7 +18,7 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | Module                      | Status     | Notes                                                        |
 | --------------------------- | ---------- | ----------------------------------------------------------- |
 | `costing`                   | ✅ built    | Costing & Quotation engine — pure, fully unit-tested.       |
-| `enquiry-intake`            | ✅ built\*  | RFQ intake (manual + inbound webhook), triage, status machine, tenant-scoped, audited. \*Persistence/HTTP (Prisma + NestJS) is the next slice. |
+| `enquiry-intake`            | ✅ built    | RFQ intake (manual + inbound webhook), triage, status machine, tenant-scoped, audited. NestJS REST API + signed/idempotent webhook + error envelope, e2e-tested. Prisma schema/migration committed; DB-backed repo activates in a DB env (see `prisma/README.md`). |
 | identity-org                | ⏳ planned  | Auth, users, roles, tenancy, org settings.                  |
 | agency-crm                  | ⏳ planned  | Counterparty records, contacts.                             |
 | itinerary-builder           | ⏳ planned  | Days, timed segments, reference-itinerary fidelity.         |
