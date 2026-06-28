@@ -130,6 +130,25 @@ model Rate {
   @@map("rate")
 }
 
+// Quotation (Build guide §3, §5) -----------------------------------------
+model Quote {
+  id        String   @id
+  orgId     String   @map("org_id")
+  enquiryId String   @map("enquiry_id")
+  version   Int
+  status    String
+  currency  String
+  // sell: SellView; margin: MarginView (owner-only — gated at the service layer)
+  sell      Json
+  margin    Json
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, enquiryId, version], name: "org_enquiry_version")
+  @@index([orgId, enquiryId])
+  @@map("quote")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")

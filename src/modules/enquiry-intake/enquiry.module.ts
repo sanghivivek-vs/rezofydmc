@@ -42,5 +42,6 @@ import { InMemoryIdempotencyStore } from './repository/idempotency-store';
         }),
     },
   ],
+  exports: [EnquiryService],
 })
 export class EnquiryModule {}
