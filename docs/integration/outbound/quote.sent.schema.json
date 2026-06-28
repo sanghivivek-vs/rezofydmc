@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dmc.platform/integration/v1/outbound/quote.sent.json",
+  "title": "quote.sent (outbound)",
+  "description": "DMC sends a quote (itinerary + line items + totals + validity + terms) to the agency. Build guide §6. Only sell-side data is shared — never internal cost/margin.",
+  "type": "object",
+  "required": ["event", "version", "idempotency_key", "occurred_at", "data"],
+  "properties": {
+    "event": { "enum": ["quote.sent", "quote.created", "quote.updated"] },
+    "version": { "const": "v1" },
+    "idempotency_key": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "data": {
+      "type": "object",
+      "required": [
+        "quote_external_id",
+        "enquiry_external_id",
+        "agency_id",
+        "currency",
+        "pricing_model",
+        "total",
+        "status"
+      ],
+      "properties": {
+        "quote_external_id": { "type": "string" },
+        "enquiry_external_id": { "type": "string" },
+        "agency_id": { "type": "string" },
+        "version_number": { "type": "integer", "minimum": 1 },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+        "pricing_model": { "enum": ["per_pax", "total"] },
+        "money": {
+          "$comment": "Reusable money shape used below.",
+          "type": "object",
+          "required": ["amount_minor", "currency"],
+          "properties": {
+            "amount_minor": { "type": "integer" },
+            "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+          }
+        },
+        "included_subtotal": { "$ref": "#/properties/data/properties/money" },
+        "taxes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "percent", "amount"],
+            "properties": {
+              "label": { "type": "string" },
+              "percent": { "type": "number" },
+              "amount": { "$ref": "#/properties/data/properties/money" }
+            }
+          }
+        },
+        "total": { "$ref": "#/properties/data/properties/money" },
+        "per_pax": { "$ref": "#/properties/data/properties/money" },
+        "slab_table": {
+          "type": "array",
+          "description": "Per-pax price by group size (Build guide §5).",
+          "items": {
+            "type": "object",
+            "required": ["group_size", "per_pax", "total"],
+            "properties": {
+              "group_size": { "type": "integer", "minimum": 1 },
+              "per_pax": { "$ref": "#/properties/data/properties/money" },
+              "total": { "$ref": "#/properties/data/properties/money" }
+            }
+          }
+        },
+        "line_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["line_id", "description", "inclusion", "sell"],
+            "properties": {
+              "line_id": { "type": "string" },
+              "description": { "type": "string" },
+              "component_type": { "type": "string" },
+              "inclusion": { "enum": ["included", "optional"] },
+              "sell": { "$ref": "#/properties/data/properties/money" }
+            }
+          }
+        },
+        "inclusions": { "type": "array", "items": { "type": "string" } },
+        "exclusions": { "type": "array", "items": { "type": "string" } },
+        "terms": { "type": "string" },
+        "cancellation_policy": {
+          "type": "string",
+          "$comment": "Cancellation policy logic to confirm with business — Build guide §0, §11."
+        },
+        "validity_date": { "type": "string", "format": "date" },
+        "itinerary_url": { "type": "string", "format": "uri" },
+        "status": { "enum": ["Draft", "Sent", "Under Revision", "Accepted", "Rejected", "Expired"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

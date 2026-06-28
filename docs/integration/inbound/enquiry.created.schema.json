@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dmc.platform/integration/v1/inbound/enquiry.created.json",
+  "title": "enquiry.created / enquiry.updated (inbound)",
+  "description": "RFQ received from the Tour Agency platform. Build guide §3 (Enquiry) and §6.",
+  "type": "object",
+  "required": ["event", "version", "idempotency_key", "occurred_at", "data"],
+  "properties": {
+    "event": { "enum": ["enquiry.created", "enquiry.updated"] },
+    "version": { "const": "v1" },
+    "idempotency_key": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "data": {
+      "type": "object",
+      "required": [
+        "enquiry_external_id",
+        "agency_id",
+        "destinations",
+        "pax",
+        "quote_deadline",
+        "status"
+      ],
+      "properties": {
+        "enquiry_external_id": { "type": "string" },
+        "agency_id": { "type": "string" },
+        "destinations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "date_range": {
+          "type": "object",
+          "properties": {
+            "start": { "type": "string", "format": "date" },
+            "end": { "type": "string", "format": "date" },
+            "flexible": { "type": "boolean", "default": false }
+          }
+        },
+        "duration_days": { "type": "integer", "minimum": 1 },
+        "pax": {
+          "type": "object",
+          "required": ["adults"],
+          "properties": {
+            "adults": { "type": "integer", "minimum": 0 },
+            "children": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["age"],
+                "properties": { "age": { "type": "integer", "minimum": 0, "maximum": 17 } }
+              }
+            },
+            "infants": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "rooming": {
+          "type": "object",
+          "properties": {
+            "single": { "type": "integer", "minimum": 0 },
+            "double": { "type": "integer", "minimum": 0 },
+            "triple": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "hotel_category": { "type": "string", "description": "e.g. '4-star' or named hotels" },
+        "named_hotels": { "type": "array", "items": { "type": "string" } },
+        "meal_preference": { "type": "string", "description": "e.g. Indian / Veg / Jain" },
+        "transport_preference": {
+          "type": "object",
+          "properties": {
+            "mode": { "enum": ["SIC", "private"] },
+            "coach_size": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "amount_minor": { "type": "integer", "minimum": 0 },
+            "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+          }
+        },
+        "must_see_inclusions": { "type": "array", "items": { "type": "string" } },
+        "special_requirements": { "type": "string" },
+        "quote_deadline": { "type": "string", "format": "date-time" },
+        "status": {
+          "enum": ["New", "In Progress", "Quoted", "Revision Requested", "Won", "Lost", "Expired"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

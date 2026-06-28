@@ -1,0 +1,32 @@
+{
+  "name": "dmc-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DMC (Destination Management Company) platform — modular monolith.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "lint": "eslint \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"docs/**/*.{md,json}\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.2",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.2",
+    "ts-jest": "^29.1.5",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

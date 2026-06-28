@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dmc.platform/integration/v1/inbound/quote.decision.json",
+  "title": "quote.accepted / quote.rejected (inbound)",
+  "description": "Agency accepts or rejects a quote. Build guide §6.",
+  "type": "object",
+  "required": ["event", "version", "idempotency_key", "occurred_at", "data"],
+  "properties": {
+    "event": { "enum": ["quote.accepted", "quote.rejected"] },
+    "version": { "const": "v1" },
+    "idempotency_key": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "data": {
+      "type": "object",
+      "required": ["quote_external_id", "enquiry_external_id", "agency_id"],
+      "properties": {
+        "quote_external_id": { "type": "string" },
+        "enquiry_external_id": { "type": "string" },
+        "agency_id": { "type": "string" },
+        "reason": { "type": "string", "description": "Optional, e.g. why rejected" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

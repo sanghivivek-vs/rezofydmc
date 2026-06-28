@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dmc.platform/integration/v1/inbound/revision.requested.json",
+  "title": "revision.requested (inbound)",
+  "description": "Agency requests changes to a quote. Build guide §6.",
+  "type": "object",
+  "required": ["event", "version", "idempotency_key", "occurred_at", "data"],
+  "properties": {
+    "event": { "const": "revision.requested" },
+    "version": { "const": "v1" },
+    "idempotency_key": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "data": {
+      "type": "object",
+      "required": ["quote_external_id", "enquiry_external_id", "agency_id", "change_notes"],
+      "properties": {
+        "quote_external_id": { "type": "string" },
+        "enquiry_external_id": { "type": "string" },
+        "agency_id": { "type": "string" },
+        "change_notes": { "type": "string" },
+        "requested_changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "line_ref": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

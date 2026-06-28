@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dmc.platform/integration/v1/outbound/segment.status.updated.json",
+  "title": "segment.status.updated (outbound)",
+  "description": "A segment's confirmation status changed during operations. Build guide §3 (Segment.bookingStatus) and §6.",
+  "type": "object",
+  "required": ["event", "version", "idempotency_key", "occurred_at", "data"],
+  "properties": {
+    "event": { "const": "segment.status.updated" },
+    "version": { "const": "v1" },
+    "idempotency_key": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "data": {
+      "type": "object",
+      "required": ["enquiry_external_id", "agency_id", "segment_id", "booking_status"],
+      "properties": {
+        "enquiry_external_id": { "type": "string" },
+        "quote_external_id": { "type": "string" },
+        "agency_id": { "type": "string" },
+        "segment_id": { "type": "string" },
+        "day_number": { "type": "integer", "minimum": 1 },
+        "booking_status": {
+          "type": "string",
+          "description": "Configurable per org; default set. 'TM' = Tour-Manager-led, no supplier booking — meaning to confirm (Build guide §3, §11).",
+          "examples": ["Confirmed", "TM", "Pending"]
+        },
+        "supplier": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
