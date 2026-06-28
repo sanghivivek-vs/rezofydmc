@@ -8,7 +8,6 @@ import { Module } from '@nestjs/common';
 import { systemClock } from '@common/clock/clock';
 import { uuidIdGenerator } from '@common/ids/id';
 import type { AuditSink } from '@common/audit/audit-log';
-import { LoggingAuditSink } from '@common/audit/logging-audit-sink';
 import { type OutboundPublisher, OUTBOUND_PUBLISHER } from '@common/integration/outbound';
 import { EnquiryService } from '@modules/enquiry-intake';
 import { CatalogService } from '@modules/catalog';
@@ -26,7 +25,6 @@ import { QuotationService } from './service/quotation.service';
   imports: [IdentityModule, EnquiryModule, CatalogModule, IntegrationModule],
   controllers: [QuoteController],
   providers: [
-    { provide: QUOTE_AUDIT_SINK, useClass: LoggingAuditSink },
     {
       provide: QuotationService,
       inject: [

@@ -7,7 +7,6 @@ import { Module } from '@nestjs/common';
 import { systemClock } from '@common/clock/clock';
 import { uuidIdGenerator } from '@common/ids/id';
 import type { AuditSink } from '@common/audit/audit-log';
-import { LoggingAuditSink } from '@common/audit/logging-audit-sink';
 import { UserService } from '@modules/identity-org';
 import { EnquiryService } from '@modules/enquiry-intake';
 import { ItineraryService } from '@modules/itinerary';
@@ -23,7 +22,6 @@ import { GdprService } from './service/gdpr.service';
   imports: [IdentityModule, EnquiryModule, ItineraryModule],
   controllers: [GdprController],
   providers: [
-    { provide: GDPR_AUDIT_SINK, useClass: LoggingAuditSink },
     {
       provide: GdprService,
       inject: [UserService, EnquiryService, ItineraryService, CONSENT_REPOSITORY, GDPR_AUDIT_SINK],

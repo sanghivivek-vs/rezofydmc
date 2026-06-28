@@ -200,6 +200,22 @@ model Booking {
   @@map("booking")
 }
 
+// Notifications (Build guide §4) — derived from the audit stream -----------
+model Notification {
+  id              String   @id
+  orgId           String   @map("org_id")
+  type            String
+  subjectType     String   @map("subject_type")
+  subjectId       String   @map("subject_id")
+  message         String
+  recipientUserId String?  @map("recipient_user_id")
+  read            Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([orgId, createdAt])
+  @@map("notification")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")

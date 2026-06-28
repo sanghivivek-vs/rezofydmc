@@ -48,6 +48,8 @@ import type { ConsentRecord } from '../../src/modules/gdpr/domain/consent';
 import type { ConsentRepository } from '../../src/modules/gdpr/repository/consent.repository';
 import type { Booking } from '../../src/modules/operations/domain/booking';
 import type { BookingRepository } from '../../src/modules/operations/repository/booking.repository';
+import type { Notification } from '../../src/modules/notifications/domain/notification';
+import type { NotificationRepository } from '../../src/modules/notifications/repository/notification.repository';
 
 const iso = (d: Date | string): string => (typeof d === 'string' ? d : d.toISOString());
 const date = (s: string): Date => new Date(s);
@@ -546,6 +548,59 @@ export class PrismaBookingRepository implements BookingRepository {
   async list(ctx: TenantContext): Promise<Booking[]> {
     const rows = await this.prisma.booking.findMany({ where: { orgId: ctx.orgId } });
     return rows.map((r) => this.toDomain(r as never));
+  }
+}
+
+@Injectable()
+export class PrismaNotificationRepository implements NotificationRepository {
+  constructor(private readonly prisma: PrismaService) {}
+  private toDomain(r: Record<string, unknown>): Notification {
+    return {
+      id: r.id as string,
+      orgId: r.orgId as string,
+      type: r.type as string,
+      subject: { type: r.subjectType as string, id: r.subjectId as string },
+      message: r.message as string,
+      recipientUserId: (r.recipientUserId as string) ?? undefined,
+      read: r.read as boolean,
+      createdAt: iso(r.createdAt as Date),
+    };
+  }
+  async create(ctx: TenantContext, n: Notification): Promise<Notification> {
+    assertSameTenant(ctx, n);
+    const r = await this.prisma.notification.create({
+      data: {
+        id: n.id,
+        orgId: n.orgId,
+        type: n.type,
+        subjectType: n.subject.type,
+        subjectId: n.subject.id,
+        message: n.message,
+        recipientUserId: n.recipientUserId ?? null,
+        read: n.read,
+        createdAt: date(n.createdAt),
+      } as never,
+    });
+    return this.toDomain(r as never);
+  }
+  async list(ctx: TenantContext): Promise<Notification[]> {
+    const rows = await this.prisma.notification.findMany({
+      where: { orgId: ctx.orgId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.toDomain(r as never));
+  }
+  async findById(ctx: TenantContext, id: string): Promise<Notification | null> {
+    const r = await this.prisma.notification.findFirst({ where: { id, orgId: ctx.orgId } });
+    return r ? this.toDomain(r as never) : null;
+  }
+  async markRead(ctx: TenantContext, id: string): Promise<Notification | null> {
+    const res = await this.prisma.notification.updateMany({
+      where: { id, orgId: ctx.orgId },
+      data: { read: true },
+    });
+    if (res.count === 0) return null;
+    return this.findById(ctx, id);
   }
 }
 

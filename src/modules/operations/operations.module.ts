@@ -9,7 +9,6 @@ import { ConfigModule } from '@nestjs/config';
 import { systemClock } from '@common/clock/clock';
 import { uuidIdGenerator } from '@common/ids/id';
 import type { AuditSink } from '@common/audit/audit-log';
-import { LoggingAuditSink } from '@common/audit/logging-audit-sink';
 import { QuotationService } from '@modules/quotation';
 import { CatalogService } from '@modules/catalog';
 import { EnquiryService } from '@modules/enquiry-intake';
@@ -27,7 +26,6 @@ import { OperationsService } from './service/operations.service';
   imports: [ConfigModule, IdentityModule, QuotationModule, CatalogModule, EnquiryModule],
   controllers: [OperationsController, QuoteDecisionWebhookController],
   providers: [
-    { provide: OPS_AUDIT_SINK, useClass: LoggingAuditSink },
     {
       provide: OperationsService,
       inject: [
