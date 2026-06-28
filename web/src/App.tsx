@@ -8,6 +8,7 @@ import { CatalogPage } from './pages/CatalogPage';
 import { BookingsPage } from './pages/BookingsPage';
 import { BookingDetailPage } from './pages/BookingDetailPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { ItineraryPage } from './pages/ItineraryPage';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -28,6 +29,7 @@ export function App() {
       >
         <Route path="/enquiries" element={<EnquiriesPage />} />
         <Route path="/enquiries/:id" element={<EnquiryDetailPage />} />
+        <Route path="/enquiries/:id/itinerary" element={<ItineraryPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/bookings/:id" element={<BookingDetailPage />} />

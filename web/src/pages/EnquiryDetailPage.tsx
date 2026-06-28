@@ -80,9 +80,14 @@ export function EnquiryDetailPage() {
 
   return (
     <div className="space-y-4">
-      <Link to="/enquiries" className="text-sm text-brand hover:underline">
-        ← Enquiries
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link to="/enquiries" className="text-sm text-brand hover:underline">
+          ← Enquiries
+        </Link>
+        <Link to={`/enquiries/${id}/itinerary`} className="text-sm text-brand hover:underline">
+          Itinerary →
+        </Link>
+      </div>
       <ErrorText>{error}</ErrorText>
 
       <Card title="Enquiry">

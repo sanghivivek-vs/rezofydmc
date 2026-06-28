@@ -116,3 +116,30 @@ export interface PipelineReport {
   won: number;
   lost: number;
 }
+
+export interface Segment {
+  id: string;
+  startTime?: string;
+  endTime?: string;
+  type: string;
+  description: string;
+  notes?: string;
+  bookingStatus: string;
+  supplier?: string;
+  componentId?: string;
+}
+
+export interface ItineraryDay {
+  dayNumber: number;
+  date: string;
+  headline: string;
+  segments: Segment[];
+}
+
+export interface Itinerary {
+  id: string;
+  enquiryId: string;
+  version: number;
+  title?: string;
+  days: ItineraryDay[];
+}

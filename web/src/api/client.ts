@@ -2,6 +2,7 @@ import type {
   Booking,
   Component,
   Enquiry,
+  Itinerary,
   LoginResult,
   PipelineReport,
   PublicUser,
@@ -107,4 +108,28 @@ export const api = {
   supplierPOs: (bookingId: string) =>
     request<SupplierPO[]>('GET', `/v1/bookings/${bookingId}/supplier-pos`),
   pipeline: () => request<PipelineReport>('GET', '/v1/reports/pipeline'),
+
+  // Itinerary
+  listItineraries: (enquiryId: string) =>
+    request<Itinerary[]>('GET', `/v1/itineraries?enquiryId=${encodeURIComponent(enquiryId)}`),
+  createItinerary: (input: { enquiryId: string; title?: string }) =>
+    request<Itinerary>('POST', '/v1/itineraries', input),
+  addDay: (itineraryId: string, input: { dayNumber: number; date: string; headline: string }) =>
+    request<Itinerary>('POST', `/v1/itineraries/${itineraryId}/days`, input),
+  addSegment: (
+    itineraryId: string,
+    dayNumber: number,
+    input: {
+      type: string;
+      description: string;
+      startTime?: string;
+      endTime?: string;
+      bookingStatus?: string;
+      supplier?: string;
+    },
+  ) => request<Itinerary>('POST', `/v1/itineraries/${itineraryId}/days/${dayNumber}/segments`, input),
+  updateSegmentStatus: (itineraryId: string, segmentId: string, bookingStatus: string) =>
+    request<Itinerary>('PATCH', `/v1/itineraries/${itineraryId}/segments/${segmentId}/status`, {
+      bookingStatus,
+    }),
 };
