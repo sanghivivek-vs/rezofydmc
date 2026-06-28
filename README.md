@@ -118,6 +118,19 @@ npm run start:dev # boot the API (in-memory persistence) on :3000
 
 Requires Node ≥ 20.
 
+### Frontend (web/)
+
+The internal operations console is a React + Vite + TypeScript SPA (Tailwind) in
+[`web/`](./web) — a separate package that consumes this API. Multi-tenancy and
+the owner-only margin gate stay server-side; the SPA is a thin rendering layer.
+
+```bash
+cd web && npm install
+npm run dev    # Vite on :5173, proxies /v1 -> the API on :3000
+npm test       # vitest
+npm run build  # production build -> web/dist
+```
+
 ### Running the API
 
 ```bash
