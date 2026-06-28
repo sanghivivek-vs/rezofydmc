@@ -17,7 +17,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { TenantContext } from '@common/tenancy/tenant-context';
-import { TenantGuard } from '../../../app/tenant/tenant.guard';
+import { JwtAuthGuard } from '../../../app/auth/jwt-auth.guard';
 import { CurrentTenant } from '../../../app/tenant/current-tenant.decorator';
 import { EnquiryService } from '../service/enquiry.service';
 import {
@@ -28,7 +28,7 @@ import {
 } from './dto';
 
 @Controller('v1/enquiries')
-@UseGuards(TenantGuard)
+@UseGuards(JwtAuthGuard)
 export class EnquiryController {
   constructor(private readonly enquiries: EnquiryService) {}
 

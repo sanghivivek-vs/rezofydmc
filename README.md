@@ -20,9 +20,12 @@ Built so far (Phase 1):
 - ✅ **Enquiry Intake** — manual + inbound-webhook RFQ intake, status state
   machine, triage, tenant-scoped repository, audited mutations
   (`src/modules/enquiry-intake/`).
-- ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/enquiries`), an HMAC-signed
-  + idempotent inbound webhook, tenant guard, consistent error envelope, all
-  e2e-tested.
+- ✅ **Identity & Org** — JWT login + org bootstrap (scrypt password hashing),
+  users, roles, org settings; `JwtAuthGuard` + `RolesGuard` with Owner-only gates
+  enforced server-side (`src/modules/identity-org/`, ADR 0006).
+- ✅ **HTTP/API layer (NestJS)** — versioned REST (`/v1/auth`, `/v1/org`,
+  `/v1/users`, `/v1/enquiries`), JWT-secured, an HMAC-signed + idempotent inbound
+  webhook, consistent error envelope, all e2e-tested.
 - ✅ **Persistence (Prisma + PostgreSQL)** — schema + initial migration + tested
   row↔domain mapper. The generated Prisma client can't be produced in the build
   sandbox (egress policy blocks the engine download), so the running app/tests use
@@ -45,6 +48,7 @@ Key decisions are recorded as ADRs:
 - [0003 — Money as integer minor units](docs/adr/0003-money-as-integer-minor-units.md)
 - [0004 — Multi-tenancy via org_id](docs/adr/0004-multi-tenancy-org-scoping.md)
 - [0005 — REST + versioned integration contract](docs/adr/0005-rest-api-and-integration-contract.md)
+- [0006 — Session auth: JWT + scrypt](docs/adr/0006-session-auth-jwt.md)
 
 ## The costing engine (§5)
 
@@ -89,21 +93,27 @@ Requires Node ≥ 20.
 ### Running the API
 
 ```bash
-WEBHOOK_SIGNING_SECRET=dev-secret npm run start:dev
+WEBHOOK_SIGNING_SECRET=dev-secret JWT_SECRET=dev-jwt npm run start:dev
 
-# create an enquiry (tenant headers are provisional until the Identity module)
-curl -X POST localhost:3000/v1/enquiries \
+# 1) bootstrap an org + owner, capture the token
+TOKEN=$(curl -s -X POST localhost:3000/v1/auth/register-org \
   -H 'content-type: application/json' \
-  -H 'x-org-id: org-A' -H 'x-user-id: u1' -H 'x-role: Sales' \
+  -d '{"org":{"name":"Alpine DMC","defaultCurrency":"CHF"},
+       "owner":{"email":"owner@alpine.test","name":"Owner","password":"password123"}}' \
+  | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+
+# 2) call a protected endpoint with the bearer token
+curl -X POST localhost:3000/v1/enquiries \
+  -H 'content-type: application/json' -H "Authorization: Bearer $TOKEN" \
   -d '{"agencyId":"AG1","destinations":["Switzerland"],
        "pax":{"adults":2,"children":[],"infants":0},
        "quoteDeadline":"2026-06-15T00:00:00Z"}'
 ```
 
-The inbound webhook (`POST /v1/integration/webhooks/enquiry`) requires an
-`x-signature` HMAC-SHA256 of the raw body keyed by `WEBHOOK_SIGNING_SECRET`, plus
-`x-org-id`. To use PostgreSQL instead of the in-memory store, see
-[`prisma/README.md`](./prisma/README.md).
+The inbound webhook (`POST /v1/integration/webhooks/enquiry`) is authenticated
+separately by an `x-signature` HMAC-SHA256 of the raw body keyed by
+`WEBHOOK_SIGNING_SECRET`, plus `x-org-id` (ADR 0005) — not by a user token. To use
+PostgreSQL instead of the in-memory store, see [`prisma/README.md`](./prisma/README.md).
 
 ## Decisions still open
 

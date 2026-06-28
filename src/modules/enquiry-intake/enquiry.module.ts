@@ -10,6 +10,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { IdentityModule } from '../identity-org/identity.module';
 import type { AuditSink } from '@common/audit/audit-log';
 import { LoggingAuditSink } from '@common/audit/logging-audit-sink';
 import { systemClock } from '@common/clock/clock';
@@ -23,7 +24,7 @@ import { InMemoryEnquiryRepository } from './repository/in-memory-enquiry.reposi
 import { InMemoryIdempotencyStore } from './repository/idempotency-store';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, IdentityModule],
   controllers: [EnquiryController, EnquiryWebhookController],
   providers: [
     { provide: ENQUIRY_REPOSITORY, useClass: InMemoryEnquiryRepository },

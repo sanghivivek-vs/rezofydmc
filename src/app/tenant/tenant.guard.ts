@@ -1,11 +1,12 @@
 /**
- * Tenant context guard (PROVISIONAL).
+ * Tenant context guard (HEADER-BASED — SUPERSEDED, dev/testing only).
  *
- * Builds a {@link TenantContext} from request headers and attaches it to the
- * request. This is a placeholder until the Identity & Org module (Build guide
- * §4) issues real authenticated sessions / JWTs — at which point this guard is
- * replaced by one that derives org/user/role from a verified token. The
- * service/repository tenant-scoping contract (ADR 0004) is unchanged either way.
+ * Production auth now uses {@link JwtAuthGuard} (Identity & Org module), which
+ * derives org/user/role from a verified session token and attaches the same
+ * {@link TenantContext} to the request. This header-based guard is retained as a
+ * convenience for local testing without minting a token; do NOT mount it on
+ * production routes. It also defines {@link RequestWithTenant}, the shared
+ * request-augmentation type both guards populate.
  *
  * Headers:
  *   x-org-id   (required) — the DMC tenant
