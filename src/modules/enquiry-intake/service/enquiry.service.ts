@@ -115,6 +115,41 @@ export class EnquiryService {
     return this.repo.list(ctx);
   }
 
+  // ---- GDPR (ADR 0008): traveller personal data ------------------------
+
+  /** The traveller/personal data captured on an enquiry (DSAR export). */
+  async exportPersonalData(ctx: TenantContext, id: string): Promise<Record<string, unknown>> {
+    const e = await this.getById(ctx, id);
+    return {
+      id: e.id,
+      enquiryExternalId: e.enquiryExternalId,
+      pax: e.pax,
+      mealPreference: e.mealPreference,
+      namedHotels: e.namedHotels,
+      specialRequirements: e.specialRequirements,
+    };
+  }
+
+  /**
+   * Erase the personal/special-category data on an enquiry while preserving the
+   * commercial record. Clears free-text and preference fields (which can carry
+   * identifying or special-category data, e.g. dietary→religion) and the ages of
+   * minors; keeps adult/infant counts (pseudonymous, needed for the record).
+   * Idempotent.
+   */
+  async eraseSubjectData(ctx: TenantContext, id: string): Promise<Enquiry> {
+    const e = await this.getById(ctx, id);
+    const erased: Enquiry = {
+      ...e,
+      pax: { adults: e.pax.adults, children: [], infants: e.pax.infants },
+      mealPreference: undefined,
+      namedHotels: undefined,
+      specialRequirements: undefined,
+      updatedAt: this.clock(),
+    };
+    return this.repo.update(ctx, erased);
+  }
+
   /** Triage: assign the enquiry to a staff user. */
   async assign(ctx: TenantContext, id: string, userId: UserId): Promise<Enquiry> {
     const enquiry = await this.getById(ctx, id);

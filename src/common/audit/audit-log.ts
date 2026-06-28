@@ -17,7 +17,12 @@ export type AuditAction =
   | 'enquiry.status_changed'
   | 'costline.priced'
   | 'markup.changed'
-  | 'segment.status_changed';
+  | 'segment.status_changed'
+  // GDPR (ADR 0008): personal-data access/erasure/consent are audited.
+  | 'data.exported'
+  | 'data.erased'
+  | 'data.accessed'
+  | 'consent.recorded';
 
 export interface AuditEvent {
   readonly orgId: OrgId;

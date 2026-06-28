@@ -29,6 +29,7 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | operations                  | ⏳ phase 2  | Bookings, confirmations, vouchers, payments.                |
 | integration                 | ⏳ planned  | API + webhooks to/from the Tour Agency platform (§6).       |
 | `integration`               | ✅ outbound | Signed, retrying, dead-lettered outbound webhook dispatcher (`quote.sent`, `segment.status.updated`) per ADR 0005. Inbound `enquiry.created` lives in enquiry-intake. |
+| `gdpr`                       | ✅ built    | Data-subject controls (ADR 0008): PII registry, DSAR export, right-to-erasure (anonymise in place), consent/lawful-basis records, retention sweep. Each context erases its own data; all access/erasure audited. `/v1/gdpr/*`, Owner-gated. |
 | notifications               | ⏳ planned  | In-app + email events.                                      |
 | reporting                   | ⏳ planned  | Pipeline, win/loss, margin by enquiry.                      |
 

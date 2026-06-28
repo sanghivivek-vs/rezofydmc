@@ -73,6 +73,41 @@ export class UserService {
     if (!verifyPassword(password, user.passwordHash)) return null;
     return user;
   }
+
+  // ---- GDPR (ADR 0008) --------------------------------------------------
+
+  /** The personal data held about a staff user (no credential material). */
+  async exportPersonalData(ctx: TenantContext, userId: string): Promise<Record<string, unknown>> {
+    const user = await this.repo.findById(ctx, userId);
+    if (!user) throw new NotFoundError(`User ${userId} not found`, { userId });
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt,
+    };
+  }
+
+  /**
+   * Right to erasure: anonymise the user in place. The row and id are retained
+   * for referential integrity and the audit trail, but all PII and credential
+   * material are tombstoned and the account is disabled. Idempotent.
+   */
+  async anonymise(ctx: TenantContext, userId: string): Promise<User> {
+    const user = await this.repo.findById(ctx, userId);
+    if (!user) throw new NotFoundError(`User ${userId} not found`, { userId });
+    const erased: User = {
+      ...user,
+      email: `erased+${user.id}@erased.invalid`,
+      name: 'ERASED',
+      passwordHash: '',
+      status: 'disabled',
+      updatedAt: this.clock(),
+    };
+    return this.repo.update(ctx, erased);
+  }
 }
 
 function normaliseEmail(email: string): string {

@@ -166,6 +166,22 @@ model Itinerary {
   @@map("itinerary")
 }
 
+// GDPR consent / lawful-basis records (ADR 0008) -------------------------
+model ConsentRecord {
+  id          String   @id
+  orgId       String   @map("org_id")
+  subjectType String   @map("subject_type")
+  subjectRef  String   @map("subject_ref")
+  purpose     String
+  lawfulBasis String   @map("lawful_basis")
+  granted     Boolean
+  recordedBy  String   @map("recorded_by")
+  recordedAt  DateTime @map("recorded_at")
+
+  @@index([orgId, subjectRef])
+  @@map("consent_record")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")

@@ -86,6 +86,20 @@ export class ItineraryService {
     return this.repo.listByEnquiry(ctx, enquiryId);
   }
 
+  /**
+   * GDPR (ADR 0008): redact free-text personal data from an itinerary's segments
+   * (notes can carry traveller PII). Structural/operational fields (type, times,
+   * booking status, component links) are retained. Idempotent.
+   */
+  async redactPersonalData(ctx: TenantContext, itineraryId: string): Promise<Itinerary> {
+    const itinerary = await this.getById(ctx, itineraryId);
+    const days = itinerary.days.map((d) => ({
+      ...d,
+      segments: d.segments.map((s) => (s.notes === undefined ? s : { ...s, notes: undefined })),
+    }));
+    return this.repo.save(ctx, { ...itinerary, days, updatedAt: this.clock() });
+  }
+
   async addDay(ctx: TenantContext, itineraryId: string, input: AddDayInput): Promise<Itinerary> {
     const itinerary = await this.getById(ctx, itineraryId);
     if (!input.date) throw new ValidationError('Day date is required');

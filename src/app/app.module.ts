@@ -7,6 +7,7 @@ import { QuotationModule } from '../modules/quotation/quotation.module';
 import { ItineraryModule } from '../modules/itinerary/itinerary.module';
 import { IntegrationModule } from '../modules/integration/integration.module';
 import { DocumentsModule } from '../modules/documents/documents.module';
+import { GdprModule } from '../modules/gdpr/gdpr.module';
 import { SecurityModule } from './security/security.module';
 
 @Module({
@@ -20,6 +21,7 @@ import { SecurityModule } from './security/security.module';
     QuotationModule,
     ItineraryModule,
     DocumentsModule,
+    GdprModule,
   ],
 })
 export class AppModule {}

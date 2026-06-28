@@ -1,0 +1,2 @@
+export const CONSENT_REPOSITORY = Symbol('CONSENT_REPOSITORY');
+export const GDPR_AUDIT_SINK = Symbol('GDPR_AUDIT_SINK');

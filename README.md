@@ -74,6 +74,8 @@ Key decisions are recorded as ADRs:
 - [0004 — Multi-tenancy via org_id](docs/adr/0004-multi-tenancy-org-scoping.md)
 - [0005 — REST + versioned integration contract](docs/adr/0005-rest-api-and-integration-contract.md)
 - [0006 — Session auth: JWT + scrypt](docs/adr/0006-session-auth-jwt.md)
+- [0007 — Security hardening baseline](docs/adr/0007-security-hardening.md)
+- [0008 — GDPR technical controls](docs/adr/0008-gdpr-technical-controls.md)
 
 ## The costing engine (§5)
 
