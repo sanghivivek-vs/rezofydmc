@@ -18,9 +18,9 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | Module                      | Status     | Notes                                                        |
 | --------------------------- | ---------- | ----------------------------------------------------------- |
 | `costing`                   | ✅ built    | Costing & Quotation engine — pure, fully unit-tested.       |
+| `enquiry-intake`            | ✅ built\*  | RFQ intake (manual + inbound webhook), triage, status machine, tenant-scoped, audited. \*Persistence/HTTP (Prisma + NestJS) is the next slice. |
 | identity-org                | ⏳ planned  | Auth, users, roles, tenancy, org settings.                  |
 | agency-crm                  | ⏳ planned  | Counterparty records, contacts.                             |
-| enquiry-intake              | ⏳ planned  | RFQ inbox (integration + manual), triage, assignment.       |
 | itinerary-builder           | ⏳ planned  | Days, timed segments, reference-itinerary fidelity.         |
 | catalog-suppliers           | ⏳ planned  | Components, suppliers, rate cards, seasons, slabs.          |
 | documents                   | ⏳ planned  | Itinerary + costing PDF generation, branding.               |
