@@ -159,3 +159,13 @@ export function equals(a: Money, b: Money): boolean {
 export function formatDebug(a: Money): string {
   return `${a.amountMinor} ${a.currency} (minor)`;
 }
+
+/**
+ * Display formatting for documents/UI, e.g. "2400.00 CHF". `fractionDigits` is
+ * the currency's minor-unit exponent (default 2; pass 0 for JPY). This is a
+ * presentation helper — accounting always uses integer minor units.
+ */
+export function formatMoney(a: Money, fractionDigits = 2): string {
+  const major = a.amountMinor / 10 ** fractionDigits;
+  return `${major.toFixed(fractionDigits)} ${a.currency}`;
+}

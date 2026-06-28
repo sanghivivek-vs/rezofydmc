@@ -23,6 +23,7 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | `enquiry-intake`            | ✅ built    | RFQ intake (manual + inbound webhook), triage, status machine, tenant-scoped, audited. NestJS REST API (now JWT-secured) + signed/idempotent webhook + error envelope, e2e-tested. Prisma schema/migration committed; DB-backed repo activates in a DB env (see `prisma/README.md`). |
 | `catalog`                   | ✅ built    | Suppliers, components, rate cards (seasons, slabs, child rules). JWT-secured REST, role-gated edits, tenant-scoped. Bridges rates into the costing engine (`listCostingRates`). e2e-tested. |
 | `itinerary`                 | ✅ built    | Versioned itineraries: days + timed segments (type, supplier, booking status validated against the org set, optional component link). `/v1/itineraries`, segment status updates audited. e2e-tested. |
+| `documents`                 | ✅ built    | Client quote+itinerary document and owner-only costing sheet via a `DocumentRenderer` port (HTML now, PDF swappable). `GET /v1/quotes/:id/document` & `/costing-sheet`. e2e-tested. |
 | agency-crm                  | ⏳ planned  | Counterparty records, contacts.                             |
 | documents                   | ⏳ planned  | Itinerary + costing PDF generation, branding.               |
 | operations                  | ⏳ phase 2  | Bookings, confirmations, vouchers, payments.                |

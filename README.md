@@ -35,6 +35,10 @@ Built so far (Phase 1):
   and persists a versioned quote. The sell view is returned to everyone; the
   **owner-only margin view is gated server-side** (`src/modules/quotation/`).
   This closes the Phase-1 core loop: enquiry → catalog → priced quote.
+- ✅ **Documents** — `GET /v1/quotes/:id/document` (client quote + itinerary,
+  sell-side) and `GET /v1/quotes/:id/costing-sheet` (Owner-only cost/margin), via
+  a `DocumentRenderer` port — HTML now, a PDF engine swappable behind the same
+  port (`src/modules/documents/`).
 - ✅ **Integration (outbound)** — `POST /v1/quotes/:id/send` emits a signed
   `quote.sent`; segment status changes emit `segment.status.updated`. The
   dispatcher signs (HMAC), retries with backoff, and dead-letters on exhaustion
@@ -49,8 +53,12 @@ Built so far (Phase 1):
   an in-memory repository; the DB-backed repo activates in a DB env — see
   [`prisma/README.md`](./prisma/README.md).
 - ✅ ADRs (`docs/adr/`), integration JSON Schemas (`docs/integration/`), CI.
-- ⏳ Identity/Org, Itinerary builder, Catalog, Documents, full Integration layer,
-  etc. — see [`src/modules/README.md`](./src/modules/README.md).
+
+**Phase 1 (MVP) is functionally complete** — the full core loop runs end-to-end:
+receive an enquiry → build a Switzerland-style itinerary → price it from the
+catalog → generate the quote document → send the quote (`quote.sent`). Next is
+**Phase 2** (Operations: bookings/confirmations/vouchers, the revision loop,
+notifications, reporting) — see [`src/modules/README.md`](./src/modules/README.md).
 
 ## Architecture
 
