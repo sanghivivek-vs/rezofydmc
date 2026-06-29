@@ -74,7 +74,7 @@ export function ItineraryPage() {
 
       {!itinerary ? (
         <Card title="Itinerary">
-          <p className="mb-3 text-sm text-gray-500">No itinerary yet for this enquiry.</p>
+          <p className="mb-3 text-sm text-slate-500">No itinerary yet for this enquiry.</p>
           <Button onClick={() => void run(() => api.createItinerary({ enquiryId }))}>
             Create itinerary
           </Button>
@@ -83,7 +83,7 @@ export function ItineraryPage() {
         <>
           <Card title={`Itinerary v${itinerary.version}`}>
             {itinerary.days.length === 0 && (
-              <p className="text-sm text-gray-400">No days yet — add one below.</p>
+              <p className="text-sm text-slate-400">No days yet — add one below.</p>
             )}
             {itinerary.days.map((d) => (
               <div key={d.dayNumber} className="mb-4">
@@ -92,7 +92,7 @@ export function ItineraryPage() {
                 </h3>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-gray-500">
+                    <tr className="text-left text-slate-500">
                       <th className="py-1">Time</th>
                       <th>Type</th>
                       <th>Description</th>
@@ -101,7 +101,7 @@ export function ItineraryPage() {
                   </thead>
                   <tbody>
                     {d.segments.map((s) => (
-                      <tr key={s.id} className="border-t border-gray-100">
+                      <tr key={s.id} className="border-t border-slate-100">
                         <td className="py-1.5">
                           {s.startTime}
                           {s.endTime ? `–${s.endTime}` : ''}
@@ -110,7 +110,7 @@ export function ItineraryPage() {
                         <td>{s.description}</td>
                         <td>
                           <select
-                            className="rounded border border-gray-300 px-2 py-0.5 text-xs"
+                            className="rounded-lg border border-slate-300 px-2 py-0.5 text-xs"
                             value={s.bookingStatus}
                             onChange={(e) =>
                               void run(() =>
@@ -189,7 +189,7 @@ function AddSegment({ onAdd }: { onAdd: (seg: SegmentInput) => void }) {
       }}
     >
       <select
-        className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+        className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
         value={type}
         onChange={(e) => setType(e.target.value)}
       >
@@ -217,7 +217,7 @@ function AddSegment({ onAdd }: { onAdd: (seg: SegmentInput) => void }) {
         onChange={(e) => setEndTime(e.target.value)}
       />
       <select
-        className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+        className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
         value={bookingStatus}
         onChange={(e) => setBookingStatus(e.target.value)}
       >

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { ApiError, getPlatformToken, platformApi, setPlatformToken } from '../api/client';
 import type { BroadcastResult, PlatformAdmin, TenantSummary } from '../api/types';
-import { Badge, Button, Card, ErrorText, Field, Input } from '../components/ui';
+import { Button, Card, ErrorText, Field, Input } from '../components/ui';
 
 export function PlatformConsole() {
   const [admin, setAdmin] = useState<PlatformAdmin | null>(null);
@@ -19,7 +20,7 @@ export function PlatformConsole() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-gray-400">Loading…</div>;
+  if (loading) return <div className="p-8 text-slate-400">Loading…</div>;
   if (!admin) return <PlatformLogin onAuthed={setAdmin} />;
   return (
     <Console
@@ -49,28 +50,40 @@ function PlatformLogin({ onAuthed }: { onAuthed: (a: PlatformAdmin) => void }) {
   }
 
   return (
-    <div className="mx-auto mt-24 max-w-sm">
-      <h1 className="mb-1 text-center text-xl font-semibold">DMC Platform Console</h1>
-      <p className="mb-6 text-center text-sm text-gray-500">Super-admin sign in</p>
-      <Card>
-        <form onSubmit={submit} className="space-y-3">
-          <Field label="Email">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </Field>
-          <Field label="Password">
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </Field>
-          <ErrorText>{error}</ErrorText>
-          <Button type="submit" className="w-full">
-            Sign in
-          </Button>
-        </form>
-      </Card>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 text-center">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-pop">
+            <ShieldCheck className="h-6 w-6" />
+          </span>
+          <h1 className="mt-3 text-xl font-semibold text-white">DMC Platform Console</h1>
+          <p className="text-sm text-slate-400">Super-admin sign in</p>
+        </div>
+        <Card>
+          <form onSubmit={submit} className="space-y-3">
+            <Field label="Email">
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Password">
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Field>
+            <ErrorText>{error}</ErrorText>
+            <Button type="submit" className="w-full">
+              Sign in
+            </Button>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -103,25 +116,35 @@ function Console({ admin, onSignOut }: { admin: PlatformAdmin; onSignOut: () => 
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-gray-200 bg-gray-900 text-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <span className="font-semibold">DMC Platform Console</span>
+      <header className="border-b border-slate-800 bg-gradient-to-r from-slate-900 to-indigo-950 text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+            <span className="font-semibold">DMC Platform Console</span>
+          </div>
           <div className="flex items-center gap-3 text-sm">
-            <span>{admin.name}</span>
-            <Badge>super-admin</Badge>
-            <Button variant="ghost" onClick={onSignOut}>
+            <span className="hidden sm:inline">{admin.name}</span>
+            <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-white/90">
+              super-admin
+            </span>
+            <button
+              onClick={onSignOut}
+              className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white/90 transition hover:bg-white/10"
+            >
               Sign out
-            </Button>
+            </button>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-6">
+      <main className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6">
         <ErrorText>{error}</ErrorText>
         <BroadcastCard onSent={reload} />
         <Card title={`Tenants (${tenants.length})`}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500">
+              <tr className="text-left text-xs text-slate-500">
                 <th className="py-1.5">Tenant</th>
                 <th>Status</th>
                 <th>Channels</th>
@@ -131,10 +154,10 @@ function Console({ admin, onSignOut }: { admin: PlatformAdmin; onSignOut: () => 
             </thead>
             <tbody>
               {tenants.map((t) => (
-                <tr key={t.id} className="border-t border-gray-100 align-top">
+                <tr key={t.id} className="border-t border-slate-100 align-top">
                   <td className="py-2">
                     <div className="font-medium">{t.name}</div>
-                    <div className="font-mono text-xs text-gray-400">{t.id}</div>
+                    <div className="font-mono text-xs text-slate-400">{t.id}</div>
                   </td>
                   <td>
                     {t.status === 'suspended' ? (
@@ -143,12 +166,12 @@ function Console({ admin, onSignOut }: { admin: PlatformAdmin; onSignOut: () => 
                       <span className="text-green-700">active</span>
                     )}
                   </td>
-                  <td className="text-xs text-gray-600">
+                  <td className="text-xs text-slate-600">
                     {t.enabledChannels.length ? t.enabledChannels.join(', ') : '—'}
                   </td>
                   <td className="text-xs">
                     <div>platform: {t.customerMessagingAllowed ? 'allowed' : 'blocked'}</div>
-                    <div className="text-gray-500">
+                    <div className="text-slate-500">
                       tenant: {t.customerMessagingEnabled ? 'on' : 'off'} · effective:{' '}
                       {t.customerMessagingEffective ? 'yes' : 'no'}
                     </div>
@@ -215,7 +238,7 @@ function BroadcastCard({ onSent }: { onSent: () => void }) {
         </Field>
         <Field label="Message">
           <textarea
-            className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
             rows={3}
             value={message}
             onChange={(e) => setMessage(e.target.value)}

@@ -7,7 +7,7 @@ import { Badge, Button, Card, ErrorText, Field, Input } from '../components/ui';
 const ROLES: Role[] = ['Owner', 'Sales', 'Ops', 'Accounts', 'ReadOnly'];
 
 const selectClass =
-  'w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30';
 
 export function UsersPage() {
   const { user: me, isOwner } = useAuth();
@@ -47,7 +47,7 @@ export function UsersPage() {
       <Card title="Users">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-500">
+            <tr className="text-left text-xs text-slate-500">
               <th className="py-1.5">Name</th>
               <th>Email</th>
               <th>Role</th>
@@ -87,9 +87,9 @@ function UserRow({
 }) {
   const disabled = user.status === 'disabled';
   return (
-    <tr className="border-t border-gray-100">
+    <tr className="border-t border-slate-100">
       <td className="py-2">{user.name}</td>
-      <td className="text-gray-600">{user.email}</td>
+      <td className="text-slate-600">{user.email}</td>
       <td>
         {isOwner ? (
           <select

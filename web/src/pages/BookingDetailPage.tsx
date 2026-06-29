@@ -46,11 +46,11 @@ export function BookingDetailPage() {
       <Card title={`Booking ${booking.id}`}>
         <div className="mb-2 flex items-center gap-2 text-sm">
           <Badge>{booking.status}</Badge>
-          <span className="text-gray-400">enquiry {booking.enquiryId}</span>
+          <span className="text-slate-400">enquiry {booking.enquiryId}</span>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-gray-500">
+            <tr className="text-left text-slate-500">
               <th className="py-1">Item</th>
               <th>Supplier</th>
               <th>Status</th>
@@ -59,7 +59,7 @@ export function BookingDetailPage() {
           </thead>
           <tbody>
             {booking.items.map((it) => (
-              <tr key={it.id} className="border-t border-gray-100">
+              <tr key={it.id} className="border-t border-slate-100">
                 <td className="py-1.5">{it.description}</td>
                 <td>{it.supplierName ?? '—'}</td>
                 <td>
@@ -67,7 +67,7 @@ export function BookingDetailPage() {
                 </td>
                 <td>
                   {it.status === 'Confirmed' ? (
-                    <span className="text-gray-500">{it.confirmationRef}</span>
+                    <span className="text-slate-500">{it.confirmationRef}</span>
                   ) : (
                     <div className="flex gap-2">
                       <Input
@@ -90,9 +90,9 @@ export function BookingDetailPage() {
 
       <Card title="Supplier purchase orders">
         {pos.map((po) => (
-          <div key={po.supplierId} className="mb-2 rounded border border-gray-200 p-2 text-sm">
+          <div key={po.supplierId} className="mb-2 rounded-lg border border-slate-200 p-2 text-sm">
             <div className="font-medium">{po.supplierName}</div>
-            <ul className="ml-4 list-disc text-gray-600">
+            <ul className="ml-4 list-disc text-slate-600">
               {po.items.map((i) => (
                 <li key={i.itemId}>
                   {i.description} — {i.status}

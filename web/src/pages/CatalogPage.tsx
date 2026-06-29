@@ -57,9 +57,9 @@ export function CatalogPage() {
         <Card title="Suppliers">
           <ul className="mb-3 space-y-1 text-sm">
             {suppliers.map((s) => (
-              <li key={s.id} className="flex justify-between border-b border-gray-100 py-1">
+              <li key={s.id} className="flex justify-between border-b border-slate-100 py-1">
                 <span>{s.name}</span>
-                <span className="text-gray-400">{s.currency}</span>
+                <span className="text-slate-400">{s.currency}</span>
               </li>
             ))}
           </ul>
@@ -87,11 +87,11 @@ export function CatalogPage() {
         <Card title="Components">
           <ul className="mb-3 space-y-1 text-sm">
             {components.map((c) => (
-              <li key={c.id} className="flex justify-between border-b border-gray-100 py-1">
+              <li key={c.id} className="flex justify-between border-b border-slate-100 py-1">
                 <span>
-                  {c.name} <span className="text-gray-400">({c.type})</span>
+                  {c.name} <span className="text-slate-400">({c.type})</span>
                 </span>
-                <span className="text-gray-400">{c.unitBasis}</span>
+                <span className="text-slate-400">{c.unitBasis}</span>
               </li>
             ))}
           </ul>
@@ -112,7 +112,7 @@ export function CatalogPage() {
             </Field>
             <Field label="Type">
               <select
-                className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                 value={cmpType}
                 onChange={(e) => setCmpType(e.target.value)}
               >
@@ -123,7 +123,7 @@ export function CatalogPage() {
             </Field>
             <Field label="Supplier">
               <select
-                className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                 value={cmpSupplier}
                 onChange={(e) => setCmpSupplier(e.target.value)}
                 required
@@ -138,7 +138,7 @@ export function CatalogPage() {
             </Field>
             <Field label="Unit basis">
               <select
-                className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                 value={cmpUnit}
                 onChange={(e) => setCmpUnit(e.target.value)}
               >
@@ -165,7 +165,7 @@ export function CatalogPage() {
         >
           <Field label="Component">
             <select
-              className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+              className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
               value={rateComponent}
               onChange={(e) => setRateComponent(e.target.value)}
               required

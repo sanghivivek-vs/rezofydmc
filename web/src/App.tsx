@@ -16,7 +16,7 @@ import { PlatformConsole } from './platform/PlatformConsole';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="p-8 text-gray-400">Loading…</div>;
+  if (loading) return <div className="p-8 text-slate-400">Loading…</div>;
   return user ? children : <Navigate to="/login" replace />;
 }
 

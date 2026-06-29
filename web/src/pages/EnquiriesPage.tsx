@@ -51,7 +51,7 @@ export function EnquiriesPage() {
           <ErrorText>{error}</ErrorText>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-500">
+              <tr className="text-left text-slate-500">
                 <th className="py-1">Agency</th>
                 <th>Destinations</th>
                 <th>Status</th>
@@ -60,7 +60,7 @@ export function EnquiriesPage() {
             </thead>
             <tbody>
               {enquiries.map((e) => (
-                <tr key={e.id} className="border-t border-gray-100">
+                <tr key={e.id} className="border-t border-slate-100">
                   <td className="py-1.5">{e.agencyId}</td>
                   <td>{e.destinations.join(', ')}</td>
                   <td>{e.status}</td>
@@ -73,7 +73,7 @@ export function EnquiriesPage() {
               ))}
               {enquiries.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-3 text-gray-400">
+                  <td colSpan={4} className="py-3 text-slate-400">
                     No enquiries yet.
                   </td>
                 </tr>

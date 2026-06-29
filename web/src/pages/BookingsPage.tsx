@@ -20,7 +20,7 @@ export function BookingsPage() {
       <ErrorText>{error}</ErrorText>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-500">
+          <tr className="text-left text-slate-500">
             <th className="py-1">Booking</th>
             <th>Items</th>
             <th>Status</th>
@@ -29,7 +29,7 @@ export function BookingsPage() {
         </thead>
         <tbody>
           {bookings.map((b) => (
-            <tr key={b.id} className="border-t border-gray-100">
+            <tr key={b.id} className="border-t border-slate-100">
               <td className="py-1.5 font-mono text-xs">{b.id}</td>
               <td>{b.items.length}</td>
               <td>
@@ -44,7 +44,7 @@ export function BookingsPage() {
           ))}
           {bookings.length === 0 && (
             <tr>
-              <td colSpan={4} className="py-3 text-gray-400">
+              <td colSpan={4} className="py-3 text-slate-400">
                 No bookings yet — accept a quote to create one.
               </td>
             </tr>

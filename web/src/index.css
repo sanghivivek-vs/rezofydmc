@@ -1,7 +1,24 @@
+@import url('https://rsms.me/inter/inter.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50 text-gray-900;
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900;
+    background-image:
+      radial-gradient(60rem 60rem at 110% -10%, rgb(79 70 229 / 0.06), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 0%, rgb(99 102 241 / 0.05), transparent 55%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply border border-white/60 bg-white/80 backdrop-blur-md;
+  }
 }

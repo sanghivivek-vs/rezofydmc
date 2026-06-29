@@ -29,7 +29,7 @@ const FROM_HINT: Record<MessageChannel, string> = {
 };
 
 const selectClass =
-  'w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none disabled:bg-gray-50';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:bg-slate-50';
 
 export function SettingsPage() {
   const { isOwner } = useAuth();
@@ -62,7 +62,7 @@ export function SettingsPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Messaging channels</h1>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-slate-500">
         Configure how the platform reaches customers and your team over email, SMS, and WhatsApp.
         Provider credentials are held securely on the server and never shown here.
       </p>
@@ -71,7 +71,7 @@ export function SettingsPage() {
       <Card title="Channels">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-500">
+            <tr className="text-left text-xs text-slate-500">
               <th className="py-1.5">Channel</th>
               <th>Enabled</th>
               <th>Provider</th>
@@ -97,7 +97,7 @@ export function SettingsPage() {
           </div>
         )}
         {!isOwner && (
-          <p className="mt-3 text-xs text-gray-400">Only an Owner can change channel settings.</p>
+          <p className="mt-3 text-xs text-slate-400">Only an Owner can change channel settings.</p>
         )}
       </Card>
 
@@ -131,7 +131,7 @@ function ChannelRow({
   }
 
   return (
-    <tr className="border-t border-gray-100 align-top">
+    <tr className="border-t border-slate-100 align-top">
       <td className="py-2 font-medium">{CHANNEL_LABEL[config.channel]}</td>
       <td>
         <input
@@ -224,7 +224,7 @@ function CustomerMessagingCard({ isOwner }: { isOwner: boolean }) {
 
   return (
     <Card title="Customer & partner messaging">
-      <p className="mb-3 text-xs text-gray-500">
+      <p className="mb-3 text-xs text-slate-500">
         Turn on direct messaging to your customers and partners. This only takes effect once the
         platform operator has allowed it for your account, and consent is in place.
       </p>
@@ -244,7 +244,7 @@ function CustomerMessagingCard({ isOwner }: { isOwner: boolean }) {
         {enabled && allowed && <Badge>effective</Badge>}
       </div>
       {!allowed && (
-        <p className="mt-2 text-xs text-gray-400">
+        <p className="mt-2 text-xs text-slate-400">
           Ask your platform operator to enable customer messaging for your organization.
         </p>
       )}
@@ -289,14 +289,14 @@ function RoutingRulesCard({ isOwner }: { isOwner: boolean }) {
 
   return (
     <Card title="Trigger rules — who hears about what">
-      <p className="mb-3 text-xs text-gray-500">
+      <p className="mb-3 text-xs text-slate-500">
         Each event can notify your team or (once consent is wired) the customer over the selected
         channels. Customer delivery is held back until consent and contacts are configured.
       </p>
       <ErrorText>{error}</ErrorText>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs text-gray-500">
+          <tr className="text-left text-xs text-slate-500">
             <th className="py-1.5">Event</th>
             <th>Audience</th>
             <th>Channels</th>
@@ -304,7 +304,7 @@ function RoutingRulesCard({ isOwner }: { isOwner: boolean }) {
         </thead>
         <tbody>
           {rules.map((rule, i) => (
-            <tr key={`${rule.event}-${i}`} className="border-t border-gray-100">
+            <tr key={`${rule.event}-${i}`} className="border-t border-slate-100">
               <td className="py-2 font-mono text-xs">{rule.event}</td>
               <td>
                 <select

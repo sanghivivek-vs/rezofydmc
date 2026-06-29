@@ -28,7 +28,7 @@ export function ReportsPage() {
             <table className="w-full text-sm">
               <tbody>
                 {Object.entries(report.byStatus).map(([status, count]) => (
-                  <tr key={status} className="border-t border-gray-100">
+                  <tr key={status} className="border-t border-slate-100">
                     <td className="py-1.5">{status}</td>
                     <td className="text-right font-medium">{count}</td>
                   </tr>
@@ -45,7 +45,7 @@ export function ReportsPage() {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <Card>
-      <div className="text-xs text-gray-500">{label}</div>
+      <div className="text-xs text-slate-500">{label}</div>
       <div className="text-2xl font-semibold">{value}</div>
     </Card>
   );
