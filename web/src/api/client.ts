@@ -1,9 +1,12 @@
 import type {
   Booking,
+  ChannelConfig,
   Component,
+  DeliveryResult,
   Enquiry,
   Itinerary,
   LoginResult,
+  MessageChannel,
   Notification,
   PipelineReport,
   PublicUser,
@@ -150,4 +153,11 @@ export const api = {
   listNotifications: () => request<Notification[]>('GET', '/v1/notifications'),
   markNotificationRead: (id: string) =>
     request<Notification>('POST', `/v1/notifications/${id}/read`),
+
+  // Messaging channel configuration
+  getChannels: () => request<ChannelConfig[]>('GET', '/v1/notifications/channels'),
+  updateChannels: (channels: ChannelConfig[]) =>
+    request<ChannelConfig[]>('PUT', '/v1/notifications/channels', { channels }),
+  testChannel: (channel: MessageChannel, to: string) =>
+    request<DeliveryResult>('POST', '/v1/notifications/channels/test', { channel, to }),
 };

@@ -11,6 +11,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { ItineraryPage } from './pages/ItineraryPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { UsersPage } from './pages/UsersPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -38,6 +39,7 @@ export function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/enquiries" replace />} />
     </Routes>

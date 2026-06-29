@@ -65,4 +65,75 @@ describe('Notifications API (e2e) — derived from the audit stream', () => {
   it('requires authentication', async () => {
     await api().get('/v1/notifications').expect(401);
   });
+
+  describe('channel configuration', () => {
+    it('returns a default channel config (all disabled, logging provider)', async () => {
+      const res = await api().get('/v1/notifications/channels').set(auth).expect(200);
+      const email = res.body.find((c: { channel: string }) => c.channel === 'email');
+      expect(email).toMatchObject({ channel: 'email', enabled: false, provider: 'logging' });
+      expect(res.body).toHaveLength(3);
+    });
+
+    it('an Owner can update the channel config and it round-trips', async () => {
+      const updated = await api()
+        .put('/v1/notifications/channels')
+        .set(auth)
+        .send({
+          channels: [
+            { channel: 'email', enabled: true, provider: 'logging', from: 'ops@alpine.test' },
+            { channel: 'sms', enabled: false, provider: 'twilio', from: '+15550000000' },
+            { channel: 'whatsapp', enabled: true, provider: 'gupshup', from: 'DMC' },
+          ],
+        })
+        .expect(200);
+      expect(updated.body.find((c: { channel: string }) => c.channel === 'email').enabled).toBe(
+        true,
+      );
+
+      const reread = await api().get('/v1/notifications/channels').set(auth).expect(200);
+      expect(reread.body.find((c: { channel: string }) => c.channel === 'whatsapp').provider).toBe(
+        'gupshup',
+      );
+    });
+
+    it('rejects an invalid provider in the channel config', async () => {
+      const res = await api()
+        .put('/v1/notifications/channels')
+        .set(auth)
+        .send({ channels: [{ channel: 'email', enabled: true, provider: 'nope' }] })
+        .expect(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('sends a test message through an enabled channel (logging provider → sent)', async () => {
+      const res = await api()
+        .post('/v1/notifications/channels/test')
+        .set(auth)
+        .send({ channel: 'email', to: 'someone@alpine.test' })
+        .expect(201);
+      expect(res.body).toMatchObject({ channel: 'email', status: 'sent', provider: 'logging' });
+    });
+
+    it('skips a test message for a disabled channel', async () => {
+      const res = await api()
+        .post('/v1/notifications/channels/test')
+        .set(auth)
+        .send({ channel: 'sms', to: '+15551112222' })
+        .expect(201);
+      expect(res.body.status).toBe('skipped');
+    });
+
+    it('validates the test payload', async () => {
+      await api()
+        .post('/v1/notifications/channels/test')
+        .set(auth)
+        .send({ channel: 'email' })
+        .expect(400);
+      await api()
+        .post('/v1/notifications/channels/test')
+        .set(auth)
+        .send({ channel: 'pigeon', to: 'x' })
+        .expect(400);
+    });
+  });
 });

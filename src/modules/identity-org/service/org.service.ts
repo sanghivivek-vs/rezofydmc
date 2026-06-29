@@ -5,6 +5,7 @@
 import { type TenantContext, canSeeMargins } from '@common/tenancy/tenant-context';
 import { ForbiddenError, NotFoundError, ValidationError } from '@common/errors/errors';
 import { money } from '@common/money/money';
+import { defaultChannelConfigs, normaliseChannelConfigs } from '@common/messaging/channel';
 import type { Clock } from '@common/clock/clock';
 import type { IdGenerator } from '@common/ids/id';
 import {
@@ -44,6 +45,7 @@ export class OrgService {
         defaultCurrency: input.defaultCurrency.toUpperCase(),
         defaultMarkupPercent: input.defaultMarkupPercent ?? 0,
         bookingStatuses: input.bookingStatuses ?? [...DEFAULT_BOOKING_STATUSES],
+        channels: defaultChannelConfigs(),
       },
       createdAt: now,
       updatedAt: now,
@@ -64,10 +66,19 @@ export class OrgService {
     }
     const org = await this.getCurrent(ctx);
     if (patch.defaultCurrency) money(0, patch.defaultCurrency);
+    let channels = org.settings.channels;
+    if (patch.channels !== undefined) {
+      try {
+        channels = normaliseChannelConfigs(patch.channels);
+      } catch (err) {
+        throw new ValidationError((err as Error).message);
+      }
+    }
     const settings: OrgSettings = {
       defaultCurrency: (patch.defaultCurrency ?? org.settings.defaultCurrency).toUpperCase(),
       defaultMarkupPercent: patch.defaultMarkupPercent ?? org.settings.defaultMarkupPercent,
       bookingStatuses: patch.bookingStatuses ?? org.settings.bookingStatuses,
+      channels,
     };
     return this.repo.update({ ...org, settings, updatedAt: this.clock() });
   }

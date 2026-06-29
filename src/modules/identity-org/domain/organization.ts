@@ -8,6 +8,7 @@
 
 import type { CurrencyCode } from '@common/money/money';
 import type { OrgId } from '@common/tenancy/tenant-context';
+import type { ChannelConfig } from '@common/messaging/channel';
 
 export interface OrgSettings {
   readonly defaultCurrency: CurrencyCode;
@@ -15,6 +16,11 @@ export interface OrgSettings {
   readonly defaultMarkupPercent: number;
   /** Configurable segment booking statuses (§3). */
   readonly bookingStatuses: string[];
+  /**
+   * Per-tenant messaging channel configuration (email/SMS/WhatsApp providers).
+   * Optional for backward compatibility; absent means "no channels configured".
+   */
+  readonly channels?: ChannelConfig[];
 }
 
 export interface Organization {

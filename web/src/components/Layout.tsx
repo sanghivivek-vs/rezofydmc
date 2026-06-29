@@ -57,6 +57,9 @@ function LayoutShell() {
               <NavLink to="/users" className={linkClass}>
                 Team
               </NavLink>
+              <NavLink to="/settings" className={linkClass}>
+                Settings
+              </NavLink>
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">

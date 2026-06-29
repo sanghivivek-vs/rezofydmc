@@ -16,10 +16,13 @@ import { ITINERARY_AUDIT_SINK } from '@modules/itinerary/api/tokens';
 import { GDPR_AUDIT_SINK } from '@modules/gdpr/api/tokens';
 import { OPS_AUDIT_SINK } from '@modules/operations/api/tokens';
 import { NotificationsController } from './api/notifications.controller';
+import { ChannelsController } from './api/channels.controller';
 import { EMAIL_SENDER, NOTIFICATION_REPOSITORY } from './api/tokens';
 import { LoggingEmailSender, type EmailSender } from './service/email-sender';
 import { NotificationsService } from './service/notifications.service';
 import { NotificationAuditSink } from './service/notification-audit-sink';
+import { MessageService } from './service/message.service';
+import { ProviderRegistry } from './service/providers/provider-factory';
 import type { NotificationRepository } from './repository/notification.repository';
 
 const AUDIT_TOKENS = [
@@ -33,8 +36,10 @@ const AUDIT_TOKENS = [
 @Global()
 @Module({
   imports: [IdentityModule],
-  controllers: [NotificationsController],
+  controllers: [NotificationsController, ChannelsController],
   providers: [
+    ProviderRegistry,
+    MessageService,
     { provide: EMAIL_SENDER, useClass: LoggingEmailSender },
     {
       provide: NotificationsService,
@@ -51,6 +56,6 @@ const AUDIT_TOKENS = [
     // Every feature module's audit-sink token resolves to the same instance.
     ...AUDIT_TOKENS.map((token) => ({ provide: token, useExisting: NotificationAuditSink })),
   ],
-  exports: [NotificationsService, NotificationAuditSink, ...AUDIT_TOKENS],
+  exports: [NotificationsService, NotificationAuditSink, MessageService, ...AUDIT_TOKENS],
 })
 export class NotificationsModule {}

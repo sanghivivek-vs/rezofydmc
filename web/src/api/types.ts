@@ -154,3 +154,21 @@ export interface Notification {
   read: boolean;
   createdAt: string;
 }
+
+export type MessageChannel = 'email' | 'sms' | 'whatsapp';
+export type ProviderName = 'logging' | 'twilio' | 'gupshup' | 'heydoot';
+
+export interface ChannelConfig {
+  channel: MessageChannel;
+  enabled: boolean;
+  provider: ProviderName;
+  from?: string;
+}
+
+export interface DeliveryResult {
+  channel: MessageChannel;
+  provider: ProviderName;
+  to: string;
+  status: 'sent' | 'skipped' | 'failed';
+  detail?: string;
+}
