@@ -29,7 +29,10 @@ export function EnquiriesPage() {
     try {
       await api.createEnquiry({
         agencyId,
-        destinations: destinations.split(',').map((s) => s.trim()).filter(Boolean),
+        destinations: destinations
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
         pax: { adults, children: [], infants: 0 },
         quoteDeadline: new Date(deadline || Date.now()).toISOString(),
       });

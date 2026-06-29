@@ -63,15 +63,22 @@ export function CatalogPage() {
               </li>
             ))}
           </ul>
-          <form className="space-y-2" onSubmit={guard(async () => {
-            await api.createSupplier({ name: supName, currency: supCurrency });
-            setSupName('');
-          })}>
+          <form
+            className="space-y-2"
+            onSubmit={guard(async () => {
+              await api.createSupplier({ name: supName, currency: supCurrency });
+              setSupName('');
+            })}
+          >
             <Field label="Name">
               <Input value={supName} onChange={(e) => setSupName(e.target.value)} required />
             </Field>
             <Field label="Currency">
-              <Input value={supCurrency} onChange={(e) => setSupCurrency(e.target.value)} required />
+              <Input
+                value={supCurrency}
+                onChange={(e) => setSupCurrency(e.target.value)}
+                required
+              />
             </Field>
             <Button type="submit">Add supplier</Button>
           </form>
@@ -88,15 +95,18 @@ export function CatalogPage() {
               </li>
             ))}
           </ul>
-          <form className="space-y-2" onSubmit={guard(async () => {
-            await api.createComponent({
-              name: cmpName,
-              type: cmpType,
-              supplierId: cmpSupplier,
-              unitBasis: cmpUnit,
-            });
-            setCmpName('');
-          })}>
+          <form
+            className="space-y-2"
+            onSubmit={guard(async () => {
+              await api.createComponent({
+                name: cmpName,
+                type: cmpType,
+                supplierId: cmpSupplier,
+                unitBasis: cmpUnit,
+              });
+              setCmpName('');
+            })}
+          >
             <Field label="Name">
               <Input value={cmpName} onChange={(e) => setCmpName(e.target.value)} required />
             </Field>
@@ -143,13 +153,16 @@ export function CatalogPage() {
       </div>
 
       <Card title="Add rate to a component">
-        <form className="grid gap-2 md:grid-cols-5" onSubmit={guard(async () => {
-          await api.addRate(rateComponent, {
-            net: { amountMinor: Math.round(rateAmount * 100), currency: rateCurrency },
-            validFrom: rateFrom,
-            validTo: rateTo,
-          });
-        })}>
+        <form
+          className="grid gap-2 md:grid-cols-5"
+          onSubmit={guard(async () => {
+            await api.addRate(rateComponent, {
+              net: { amountMinor: Math.round(rateAmount * 100), currency: rateCurrency },
+              validFrom: rateFrom,
+              validTo: rateTo,
+            });
+          })}
+        >
           <Field label="Component">
             <select
               className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"

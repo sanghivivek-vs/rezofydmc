@@ -54,6 +54,9 @@ function LayoutShell() {
                 Reports
               </NavLink>
               <NotificationsNavLink />
+              <NavLink to="/users" className={linkClass}>
+                Team
+              </NavLink>
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">

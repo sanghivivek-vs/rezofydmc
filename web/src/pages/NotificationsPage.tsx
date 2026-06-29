@@ -35,8 +35,12 @@ export function NotificationsPage() {
               <li key={n.id} className="flex items-start justify-between gap-4 py-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    {!n.read && <span className="h-2 w-2 rounded-full bg-brand" aria-label="unread" />}
-                    <span className={`text-sm ${n.read ? 'text-gray-500' : 'font-medium text-gray-800'}`}>
+                    {!n.read && (
+                      <span className="h-2 w-2 rounded-full bg-brand" aria-label="unread" />
+                    )}
+                    <span
+                      className={`text-sm ${n.read ? 'text-gray-500' : 'font-medium text-gray-800'}`}
+                    >
                       {n.message}
                     </span>
                   </div>

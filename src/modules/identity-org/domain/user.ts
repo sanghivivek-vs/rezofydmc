@@ -32,6 +32,26 @@ export interface CreateUserInput {
   readonly password: string;
 }
 
+/** Owner-editable user attributes (administration). Email is immutable. */
+export interface UpdateUserInput {
+  readonly name?: string;
+  readonly role?: Role;
+  readonly status?: UserStatus;
+}
+
+export const ROLES: readonly Role[] = ['Owner', 'Sales', 'Ops', 'Accounts', 'ReadOnly'];
+
+export function isRole(value: unknown): value is Role {
+  return typeof value === 'string' && (ROLES as readonly string[]).includes(value);
+}
+
+/** True once the change would leave the user as anything other than an active Owner. */
+export function losesActiveOwner(current: User, next: Pick<User, 'role' | 'status'>): boolean {
+  const wasActiveOwner = current.role === 'Owner' && current.status === 'active';
+  const staysActiveOwner = next.role === 'Owner' && next.status === 'active';
+  return wasActiveOwner && !staysActiveOwner;
+}
+
 export function toPublicUser(user: User): PublicUser {
   const { passwordHash: _passwordHash, ...rest } = user;
   return rest;

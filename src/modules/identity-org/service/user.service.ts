@@ -9,7 +9,13 @@ import { NotFoundError, ValidationError } from '@common/errors/errors';
 import type { Clock } from '@common/clock/clock';
 import type { IdGenerator } from '@common/ids/id';
 import { hashPassword, verifyPassword } from '@common/auth/password';
-import { type CreateUserInput, type User } from '../domain/user';
+import {
+  type CreateUserInput,
+  type UpdateUserInput,
+  type User,
+  isRole,
+  losesActiveOwner,
+} from '../domain/user';
 import type { UserRepository } from '../repository/user.repository';
 
 export interface UserServiceDeps {
@@ -50,6 +56,75 @@ export class UserService {
       updatedAt: now,
     };
     return this.repo.create(user);
+  }
+
+  /**
+   * Administer an existing user: change name, role, or status (enable/disable).
+   * Owner-gated at the controller. Refuses to remove the last active Owner so a
+   * tenant can never lock itself out of administration.
+   */
+  async update(ctx: TenantContext, userId: string, input: UpdateUserInput): Promise<User> {
+    const user = await this.repo.findById(ctx, userId);
+    if (!user) throw new NotFoundError(`User ${userId} not found`, { userId });
+
+    if (input.role !== undefined && !isRole(input.role)) {
+      throw new ValidationError('Invalid role', { role: input.role });
+    }
+    if (input.status !== undefined && input.status !== 'active' && input.status !== 'disabled') {
+      throw new ValidationError('Invalid status', { status: input.status });
+    }
+    if (input.name !== undefined && !input.name.trim()) {
+      throw new ValidationError('User name cannot be empty');
+    }
+
+    const next = {
+      ...user,
+      name: input.name?.trim() ?? user.name,
+      role: input.role ?? user.role,
+      status: input.status ?? user.status,
+    };
+
+    if (losesActiveOwner(user, next) && !(await this.hasAnotherActiveOwner(ctx, user.id))) {
+      throw new ValidationError('Cannot remove the last active Owner of the organization');
+    }
+
+    return this.repo.update(ctx, { ...next, updatedAt: this.clock() });
+  }
+
+  /** Self-service: change your own password after re-entering the current one. */
+  async changeOwnPassword(
+    ctx: TenantContext,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<User> {
+    assertPasswordPolicy(newPassword);
+    const user = await this.repo.findById(ctx, ctx.userId);
+    if (!user) throw new NotFoundError('Current user not found');
+    if (!verifyPassword(currentPassword, user.passwordHash)) {
+      throw new ValidationError('Current password is incorrect');
+    }
+    return this.repo.update(ctx, {
+      ...user,
+      passwordHash: hashPassword(newPassword),
+      updatedAt: this.clock(),
+    });
+  }
+
+  /** Owner action: set a new password for another user (e.g. lockout recovery). */
+  async adminResetPassword(ctx: TenantContext, userId: string, newPassword: string): Promise<User> {
+    assertPasswordPolicy(newPassword);
+    const user = await this.repo.findById(ctx, userId);
+    if (!user) throw new NotFoundError(`User ${userId} not found`, { userId });
+    return this.repo.update(ctx, {
+      ...user,
+      passwordHash: hashPassword(newPassword),
+      updatedAt: this.clock(),
+    });
+  }
+
+  private async hasAnotherActiveOwner(ctx: TenantContext, excludeUserId: string): Promise<boolean> {
+    const users = await this.repo.list(ctx);
+    return users.some((u) => u.id !== excludeUserId && u.role === 'Owner' && u.status === 'active');
   }
 
   async getMe(ctx: TenantContext): Promise<User> {
@@ -112,4 +187,10 @@ export class UserService {
 
 function normaliseEmail(email: string): string {
   return (email ?? '').trim().toLowerCase();
+}
+
+function assertPasswordPolicy(password: string): void {
+  if (!password || password.length < 8) {
+    throw new ValidationError('Password must be at least 8 characters');
+  }
 }

@@ -110,4 +110,93 @@ describe('Identity & Org API (e2e)', () => {
     await http().get('/v1/org').expect(401);
     await http().get('/v1/org').set({ Authorization: 'Bearer garbage' }).expect(401);
   });
+
+  describe('user administration', () => {
+    let targetId: string;
+
+    beforeAll(async () => {
+      const created = await http()
+        .post('/v1/users')
+        .set(ownerAuth)
+        .send({ email: 'ops@alpine.test', name: 'Otto', role: 'Ops', password: 'password123' })
+        .expect(201);
+      targetId = created.body.id;
+    });
+
+    it('lets an Owner change a user role and disable/enable the account', async () => {
+      const promoted = await http()
+        .patch(`/v1/users/${targetId}`)
+        .set(ownerAuth)
+        .send({ role: 'Accounts' })
+        .expect(200);
+      expect(promoted.body.role).toBe('Accounts');
+      expect(promoted.body).not.toHaveProperty('passwordHash');
+
+      await http()
+        .patch(`/v1/users/${targetId}`)
+        .set(ownerAuth)
+        .send({ status: 'disabled' })
+        .expect(200);
+      // A disabled user cannot log in.
+      await http()
+        .post('/v1/auth/login')
+        .send({ email: 'ops@alpine.test', password: 'password123' })
+        .expect(401);
+
+      await http()
+        .patch(`/v1/users/${targetId}`)
+        .set(ownerAuth)
+        .send({ status: 'active' })
+        .expect(200);
+    });
+
+    it('refuses to remove the last active Owner', async () => {
+      const me = await http().get('/v1/users/me').set(ownerAuth).expect(200);
+      const res = await http()
+        .patch(`/v1/users/${me.body.id}`)
+        .set(ownerAuth)
+        .send({ role: 'Sales' })
+        .expect(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('forbids a non-Owner from administering users', async () => {
+      const sales = await http()
+        .post('/v1/auth/login')
+        .send({ email: 'sales@alpine.test', password: 'password123' })
+        .expect(200);
+      const salesAuth = { Authorization: `Bearer ${sales.body.token}` };
+      await http()
+        .patch(`/v1/users/${targetId}`)
+        .set(salesAuth)
+        .send({ role: 'Owner' })
+        .expect(403);
+      await http()
+        .post(`/v1/users/${targetId}/reset-password`)
+        .set(salesAuth)
+        .send({ newPassword: 'hacked123' })
+        .expect(403);
+    });
+
+    it('Owner resets a password; the user can log in with it', async () => {
+      await http()
+        .post(`/v1/users/${targetId}/reset-password`)
+        .set(ownerAuth)
+        .send({ newPassword: 'resetpass123' })
+        .expect(201);
+      await http()
+        .post('/v1/auth/login')
+        .send({ email: 'ops@alpine.test', password: 'resetpass123' })
+        .expect(200);
+    });
+
+    it('rejects a weak password on reset', async () => {
+      const res = await http()
+        .post(`/v1/users/${targetId}/reset-password`)
+        .set(ownerAuth)
+        .send({ newPassword: 'short' })
+        .expect(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+  });
 });

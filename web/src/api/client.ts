@@ -8,6 +8,7 @@ import type {
   PipelineReport,
   PublicUser,
   Quote,
+  Role,
   Supplier,
   SupplierPO,
 } from './types';
@@ -65,6 +66,20 @@ export const api = {
   }) => request<{ token: string; owner: PublicUser }>('POST', '/v1/auth/register-org', input),
   me: () => request<PublicUser>('GET', '/v1/users/me'),
 
+  // User administration
+  listUsers: () => request<PublicUser[]>('GET', '/v1/users'),
+  createUser: (input: { email: string; name: string; role: Role; password: string }) =>
+    request<PublicUser>('POST', '/v1/users', input),
+  updateUser: (id: string, input: { name?: string; role?: Role; status?: string }) =>
+    request<PublicUser>('PATCH', `/v1/users/${id}`, input),
+  resetUserPassword: (id: string, newPassword: string) =>
+    request<{ reset: boolean }>('POST', `/v1/users/${id}/reset-password`, { newPassword }),
+  changeMyPassword: (currentPassword: string, newPassword: string) =>
+    request<{ changed: boolean }>('POST', '/v1/users/me/password', {
+      currentPassword,
+      newPassword,
+    }),
+
   // Enquiries
   listEnquiries: () => request<Enquiry[]>('GET', '/v1/enquiries'),
   getEnquiry: (id: string) => request<Enquiry>('GET', `/v1/enquiries/${id}`),
@@ -76,12 +91,8 @@ export const api = {
   createSupplier: (input: { name: string; currency: string; type?: string }) =>
     request<Supplier>('POST', '/v1/suppliers', input),
   listComponents: () => request<Component[]>('GET', '/v1/components'),
-  createComponent: (input: {
-    type: string;
-    supplierId: string;
-    name: string;
-    unitBasis: string;
-  }) => request<Component>('POST', '/v1/components', input),
+  createComponent: (input: { type: string; supplierId: string; name: string; unitBasis: string }) =>
+    request<Component>('POST', '/v1/components', input),
   addRate: (
     componentId: string,
     input: { net: { amountMinor: number; currency: string }; validFrom: string; validTo: string },
@@ -128,7 +139,8 @@ export const api = {
       bookingStatus?: string;
       supplier?: string;
     },
-  ) => request<Itinerary>('POST', `/v1/itineraries/${itineraryId}/days/${dayNumber}/segments`, input),
+  ) =>
+    request<Itinerary>('POST', `/v1/itineraries/${itineraryId}/days/${dayNumber}/segments`, input),
   updateSegmentStatus: (itineraryId: string, segmentId: string, bookingStatus: string) =>
     request<Itinerary>('PATCH', `/v1/itineraries/${itineraryId}/segments/${segmentId}/status`, {
       bookingStatus,
