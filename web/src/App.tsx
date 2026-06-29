@@ -9,6 +9,7 @@ import { BookingsPage } from './pages/BookingsPage';
 import { BookingDetailPage } from './pages/BookingDetailPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { ItineraryPage } from './pages/ItineraryPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -34,6 +35,7 @@ export function App() {
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/bookings/:id" element={<BookingDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/enquiries" replace />} />
     </Routes>

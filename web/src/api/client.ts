@@ -4,6 +4,7 @@ import type {
   Enquiry,
   Itinerary,
   LoginResult,
+  Notification,
   PipelineReport,
   PublicUser,
   Quote,
@@ -132,4 +133,9 @@ export const api = {
     request<Itinerary>('PATCH', `/v1/itineraries/${itineraryId}/segments/${segmentId}/status`, {
       bookingStatus,
     }),
+
+  // Notifications (derived from the audit stream)
+  listNotifications: () => request<Notification[]>('GET', '/v1/notifications'),
+  markNotificationRead: (id: string) =>
+    request<Notification>('POST', `/v1/notifications/${id}/read`),
 };

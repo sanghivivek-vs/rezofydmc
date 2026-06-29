@@ -143,3 +143,14 @@ export interface Itinerary {
   title?: string;
   days: ItineraryDay[];
 }
+
+export interface Notification {
+  id: string;
+  orgId: string;
+  type: string;
+  subject: { type: string; id: string };
+  message: string;
+  recipientUserId?: string;
+  read: boolean;
+  createdAt: string;
+}

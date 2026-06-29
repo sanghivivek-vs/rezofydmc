@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { NotificationsProvider, useNotifications } from '../notifications/NotificationsContext';
 import { Badge, Button } from './ui';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -7,7 +8,31 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-brand text-white' : 'text-gray-600 hover:bg-gray-100'
   }`;
 
+function NotificationsNavLink() {
+  const { unreadCount } = useNotifications();
+  return (
+    <NavLink to="/notifications" className={linkClass}>
+      <span className="inline-flex items-center gap-1.5">
+        Notifications
+        {unreadCount > 0 && (
+          <span className="inline-flex min-w-[1.25rem] justify-center rounded-full bg-red-500 px-1.5 text-xs font-semibold text-white">
+            {unreadCount}
+          </span>
+        )}
+      </span>
+    </NavLink>
+  );
+}
+
 export function Layout() {
+  return (
+    <NotificationsProvider>
+      <LayoutShell />
+    </NotificationsProvider>
+  );
+}
+
+function LayoutShell() {
   const { user, logout, isOwner } = useAuth();
   return (
     <div className="min-h-screen">
@@ -28,6 +53,7 @@ export function Layout() {
               <NavLink to="/reports" className={linkClass}>
                 Reports
               </NavLink>
+              <NotificationsNavLink />
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">
