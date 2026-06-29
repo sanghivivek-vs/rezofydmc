@@ -16,6 +16,7 @@ import { DocumentsModule } from '../modules/documents/documents.module';
 import { GdprModule } from '../modules/gdpr/gdpr.module';
 import { OperationsModule } from '../modules/operations/operations.module';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
+import { PlatformModule } from '../modules/platform/platform.module';
 
 export const FEATURE_MODULES = [
   SecurityModule,
@@ -29,4 +30,5 @@ export const FEATURE_MODULES = [
   DocumentsModule,
   GdprModule,
   OperationsModule,
+  PlatformModule,
 ];

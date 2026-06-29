@@ -68,11 +68,11 @@ rules: watch the API log for `[Message]` lines showing the team email dispatch.
 
 Set credentials in the API environment, then point a channel's `provider` at it:
 
-| Provider | Env vars |
-| --- | --- |
-| Twilio  | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` |
-| Gupshup | `GUPSHUP_API_KEY` |
-| Heydoot | `HEYDOOT_API_KEY`, `HEYDOOT_BASE_URL` (optional) |
+| Provider | Env vars                                         |
+| -------- | ------------------------------------------------ |
+| Twilio   | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`        |
+| Gupshup  | `GUPSHUP_API_KEY`                                |
+| Heydoot  | `HEYDOOT_API_KEY`, `HEYDOOT_BASE_URL` (optional) |
 
 Credentials live only in server config — never in tenant data or the API
 responses (ADR 0007, ADR 0010).

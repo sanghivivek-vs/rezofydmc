@@ -60,6 +60,29 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Create an in-app notification directly (not derived from an audit event).
+   * Used by platform broadcasts to reach a tenant's in-app feed.
+   */
+  async raiseDirect(
+    orgId: string,
+    type: string,
+    subject: { type: string; id: string },
+    message: string,
+  ): Promise<Notification> {
+    const ctx: TenantContext = { orgId, userId: 'platform', role: 'Owner' };
+    const notification: Notification = {
+      id: this.newId('ntf'),
+      orgId,
+      type,
+      subject,
+      message,
+      read: false,
+      createdAt: this.clock(),
+    };
+    return this.repo.create(ctx, notification);
+  }
+
   async list(ctx: TenantContext): Promise<Notification[]> {
     return this.repo.list(ctx);
   }

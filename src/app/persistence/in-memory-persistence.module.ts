@@ -35,6 +35,8 @@ import { BOOKING_REPOSITORY } from '@modules/operations/api/tokens';
 import { InMemoryBookingRepository } from '@modules/operations/repository/booking.repository';
 import { NOTIFICATION_REPOSITORY } from '@modules/notifications/api/tokens';
 import { InMemoryNotificationRepository } from '@modules/notifications/repository/notification.repository';
+import { PLATFORM_ADMIN_REPOSITORY } from '@modules/platform/api/tokens';
+import { InMemoryPlatformAdminRepository } from '@modules/platform/repository/platform-admin.repository';
 
 const REPOSITORY_TOKENS = [
   ENQUIRY_REPOSITORY,
@@ -49,6 +51,7 @@ const REPOSITORY_TOKENS = [
   CONSENT_REPOSITORY,
   BOOKING_REPOSITORY,
   NOTIFICATION_REPOSITORY,
+  PLATFORM_ADMIN_REPOSITORY,
 ];
 
 @Global()
@@ -66,6 +69,7 @@ const REPOSITORY_TOKENS = [
     { provide: CONSENT_REPOSITORY, useClass: InMemoryConsentRepository },
     { provide: BOOKING_REPOSITORY, useClass: InMemoryBookingRepository },
     { provide: NOTIFICATION_REPOSITORY, useClass: InMemoryNotificationRepository },
+    { provide: PLATFORM_ADMIN_REPOSITORY, useClass: InMemoryPlatformAdminRepository },
   ],
   exports: REPOSITORY_TOKENS,
 })

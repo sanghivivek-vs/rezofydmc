@@ -53,14 +53,32 @@ model Enquiry {
 
 // Identity & Org (Build guide §3, §4; ADR 0006) ---------------------------
 model Organization {
-  id        String   @id
-  name      String
-  // settings: { defaultCurrency, defaultMarkupPercent, bookingStatuses[] }
-  settings  Json
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String   @id
+  name       String
+  // active | suspended (platform-governed; suspended blocks all tenant logins)
+  status     String   @default("active")
+  // settings: { defaultCurrency, defaultMarkupPercent, bookingStatuses[], channels[], notificationRules[], customerMessagingEnabled }
+  settings   Json
+  // governance: { customerMessagingAllowed } — platform-owned, not tenant-editable
+  governance Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("organization")
+}
+
+// Platform super-admins (Build guide §3 tenancy) — operate ABOVE tenants, not
+// org-scoped. Their own login/session, separate from tenant users.
+model PlatformAdmin {
+  id           String   @id
+  email        String   @unique
+  name         String
+  status       String
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_admin")
 }
 
 model User {

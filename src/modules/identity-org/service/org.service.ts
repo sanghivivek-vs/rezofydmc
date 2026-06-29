@@ -11,9 +11,12 @@ import type { Clock } from '@common/clock/clock';
 import type { IdGenerator } from '@common/ids/id';
 import {
   type CreateOrgInput,
+  type OrgGovernance,
   type OrgSettings,
+  type OrgStatus,
   type Organization,
   DEFAULT_BOOKING_STATUSES,
+  defaultGovernance,
 } from '../domain/organization';
 import type { OrgRepository } from '../repository/org.repository';
 
@@ -42,13 +45,16 @@ export class OrgService {
     const org: Organization = {
       id: this.newId('org'),
       name: input.name,
+      status: 'active',
       settings: {
         defaultCurrency: input.defaultCurrency.toUpperCase(),
         defaultMarkupPercent: input.defaultMarkupPercent ?? 0,
         bookingStatuses: input.bookingStatuses ?? [...DEFAULT_BOOKING_STATUSES],
         channels: defaultChannelConfigs(),
         notificationRules: defaultRoutingRules(),
+        customerMessagingEnabled: false,
       },
+      governance: defaultGovernance(),
       createdAt: now,
       updatedAt: now,
     };
@@ -90,7 +96,39 @@ export class OrgService {
       bookingStatuses: patch.bookingStatuses ?? org.settings.bookingStatuses,
       channels,
       notificationRules,
+      customerMessagingEnabled:
+        patch.customerMessagingEnabled ?? org.settings.customerMessagingEnabled,
     };
+    // status & governance are platform-owned and never changed here.
     return this.repo.update({ ...org, settings, updatedAt: this.clock() });
+  }
+
+  // ---- Platform (super-admin) operations — cross-tenant, NOT org-scoped ----
+  // These bypass tenant context by design and are only reachable behind the
+  // platform auth guard. Keeping them on OrgService preserves the module
+  // boundary (the platform module calls identity via this service interface).
+
+  async listAllForPlatform(): Promise<Organization[]> {
+    return this.repo.listAll();
+  }
+
+  async getByIdForPlatform(orgId: string): Promise<Organization> {
+    const org = await this.repo.findById(orgId);
+    if (!org) throw new NotFoundError(`Organization ${orgId} not found`, { orgId });
+    return org;
+  }
+
+  async setStatusForPlatform(orgId: string, status: OrgStatus): Promise<Organization> {
+    const org = await this.getByIdForPlatform(orgId);
+    return this.repo.update({ ...org, status, updatedAt: this.clock() });
+  }
+
+  async setGovernanceForPlatform(
+    orgId: string,
+    patch: Partial<OrgGovernance>,
+  ): Promise<Organization> {
+    const org = await this.getByIdForPlatform(orgId);
+    const governance: OrgGovernance = { ...org.governance, ...patch };
+    return this.repo.update({ ...org, governance, updatedAt: this.clock() });
   }
 }

@@ -32,6 +32,8 @@ import type { Organization } from '../../src/modules/identity-org/domain/organiz
 import type { User } from '../../src/modules/identity-org/domain/user';
 import type { OrgRepository } from '../../src/modules/identity-org/repository/org.repository';
 import type { UserRepository } from '../../src/modules/identity-org/repository/user.repository';
+import type { PlatformAdmin } from '../../src/modules/platform/domain/platform-admin';
+import type { PlatformAdminRepository } from '../../src/modules/platform/repository/platform-admin.repository';
 import type { Supplier } from '../../src/modules/catalog/domain/supplier';
 import type { Component } from '../../src/modules/catalog/domain/component';
 import type { Rate } from '../../src/modules/catalog/domain/rate';
@@ -123,31 +125,59 @@ export class PrismaIdempotencyStore implements IdempotencyStore {
 @Injectable()
 export class PrismaOrgRepository implements OrgRepository {
   constructor(private readonly prisma: PrismaService) {}
-  private toDomain(r: { id: string; name: string; settings: unknown; createdAt: Date; updatedAt: Date }): Organization {
+  private toDomain(r: {
+    id: string;
+    name: string;
+    status?: string;
+    settings: unknown;
+    governance?: unknown;
+    createdAt: Date;
+    updatedAt: Date;
+  }): Organization {
+    const governance = (r.governance ?? {}) as Partial<Organization['governance']>;
     return {
       id: r.id,
       name: r.name,
+      status: (r.status as Organization['status']) ?? 'active',
       settings: r.settings as Organization['settings'],
+      governance: { customerMessagingAllowed: governance.customerMessagingAllowed ?? false },
       createdAt: iso(r.createdAt),
       updatedAt: iso(r.updatedAt),
     };
   }
   async create(org: Organization): Promise<Organization> {
     const r = await this.prisma.organization.create({
-      data: { id: org.id, name: org.name, settings: org.settings as never, updatedAt: date(org.updatedAt) },
+      data: {
+        id: org.id,
+        name: org.name,
+        status: org.status,
+        settings: org.settings as never,
+        governance: org.governance as never,
+        updatedAt: date(org.updatedAt),
+      },
     });
     return this.toDomain(r);
   }
   async update(org: Organization): Promise<Organization> {
     const r = await this.prisma.organization.update({
       where: { id: org.id },
-      data: { name: org.name, settings: org.settings as never, updatedAt: date(org.updatedAt) },
+      data: {
+        name: org.name,
+        status: org.status,
+        settings: org.settings as never,
+        governance: org.governance as never,
+        updatedAt: date(org.updatedAt),
+      },
     });
     return this.toDomain(r);
   }
   async findById(id: string): Promise<Organization | null> {
     const r = await this.prisma.organization.findUnique({ where: { id } });
     return r ? this.toDomain(r) : null;
+  }
+  async listAll(): Promise<Organization[]> {
+    const rows = await this.prisma.organization.findMany();
+    return rows.map((r) => this.toDomain(r));
   }
 }
 
@@ -601,6 +631,43 @@ export class PrismaNotificationRepository implements NotificationRepository {
     });
     if (res.count === 0) return null;
     return this.findById(ctx, id);
+  }
+}
+
+// --------------------------------------------------------------------------
+// Platform (super-admin) — not org-scoped
+// --------------------------------------------------------------------------
+
+@Injectable()
+export class PrismaPlatformAdminRepository implements PlatformAdminRepository {
+  constructor(private readonly prisma: PrismaService) {}
+  private toDomain(r: Record<string, unknown>): PlatformAdmin {
+    return {
+      id: r.id as string,
+      email: r.email as string,
+      name: r.name as string,
+      status: r.status as PlatformAdmin['status'],
+      passwordHash: r.passwordHash as string,
+      createdAt: iso(r.createdAt as Date),
+      updatedAt: iso(r.updatedAt as Date),
+    };
+  }
+  async create(a: PlatformAdmin): Promise<PlatformAdmin> {
+    const r = await this.prisma.platformAdmin.create({
+      data: { ...a, updatedAt: date(a.updatedAt) } as never,
+    });
+    return this.toDomain(r as never);
+  }
+  async findByEmail(email: string): Promise<PlatformAdmin | null> {
+    const r = await this.prisma.platformAdmin.findUnique({ where: { email: email.toLowerCase() } });
+    return r ? this.toDomain(r as never) : null;
+  }
+  async findById(id: string): Promise<PlatformAdmin | null> {
+    const r = await this.prisma.platformAdmin.findUnique({ where: { id } });
+    return r ? this.toDomain(r as never) : null;
+  }
+  async count(): Promise<number> {
+    return this.prisma.platformAdmin.count();
   }
 }
 

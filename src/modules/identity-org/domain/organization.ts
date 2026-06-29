@@ -27,14 +27,42 @@ export interface OrgSettings {
    * channels). Absent means the in-code defaults apply.
    */
   readonly notificationRules?: RoutingRule[];
+  /**
+   * Tenant self-serve switch to message its own customers/partners. Effective
+   * only when the platform also allows it (governance.customerMessagingAllowed).
+   */
+  readonly customerMessagingEnabled?: boolean;
+}
+
+export type OrgStatus = 'active' | 'suspended';
+
+/**
+ * Platform-level governance of a tenant. NOT tenant-editable — only platform
+ * super-admins change these. Kept separate from `settings` (which the tenant
+ * Owner can PUT) so a tenant can never lift its own restrictions.
+ */
+export interface OrgGovernance {
+  /** Platform override: may this tenant message its customers at all? */
+  readonly customerMessagingAllowed: boolean;
+}
+
+export function defaultGovernance(): OrgGovernance {
+  return { customerMessagingAllowed: false };
 }
 
 export interface Organization {
   readonly id: OrgId;
   readonly name: string;
+  readonly status: OrgStatus;
   readonly settings: OrgSettings;
+  readonly governance: OrgGovernance;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+/** True when a tenant may actually message customers (platform AND tenant agree). */
+export function customerMessagingEffective(org: Organization): boolean {
+  return org.governance.customerMessagingAllowed && org.settings.customerMessagingEnabled === true;
 }
 
 export interface CreateOrgInput {

@@ -36,6 +36,13 @@ export class AuthService {
   async login(email: string, password: string): Promise<LoginResult | null> {
     const user = await this.users.authenticate(email, password);
     if (!user) return null;
+    // A platform-suspended tenant cannot log in (any of its users).
+    const org = await this.orgs.getByIdForPlatform(user.orgId);
+    if (org.status === 'suspended') {
+      throw new ForbiddenError(
+        'This organization has been suspended. Contact the platform operator.',
+      );
+    }
     return { token: this.issue(user), user: toPublicUser(user) };
   }
 
