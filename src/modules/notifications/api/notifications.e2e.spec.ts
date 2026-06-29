@@ -136,4 +136,33 @@ describe('Notifications API (e2e) — derived from the audit stream', () => {
         .expect(400);
     });
   });
+
+  describe('routing rules', () => {
+    it('seeds default routing rules for a new org', async () => {
+      const res = await api().get('/v1/notifications/rules').set(auth).expect(200);
+      const quoteSent = res.body.find((r: { event: string }) => r.event === 'quote.sent');
+      expect(quoteSent).toMatchObject({ audience: 'team', channels: ['email'] });
+    });
+
+    it('an Owner can replace the routing rules', async () => {
+      const updated = await api()
+        .put('/v1/notifications/rules')
+        .set(auth)
+        .send({
+          rules: [{ event: 'quote.sent', audience: 'team', channels: ['email', 'whatsapp'] }],
+        })
+        .expect(200);
+      expect(updated.body).toHaveLength(1);
+      expect(updated.body[0].channels).toEqual(['email', 'whatsapp']);
+    });
+
+    it('rejects an invalid audience', async () => {
+      const res = await api()
+        .put('/v1/notifications/rules')
+        .set(auth)
+        .send({ rules: [{ event: 'quote.sent', audience: 'martians', channels: ['email'] }] })
+        .expect(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+  });
 });

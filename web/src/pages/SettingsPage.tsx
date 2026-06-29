@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client';
-import type { ChannelConfig, DeliveryResult, MessageChannel, ProviderName } from '../api/types';
+import type {
+  ChannelConfig,
+  DeliveryResult,
+  MessageChannel,
+  NotificationAudience,
+  ProviderName,
+  RoutingRule,
+} from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { Badge, Button, Card, ErrorText, Input } from '../components/ui';
 
 const PROVIDERS: ProviderName[] = ['logging', 'twilio', 'gupshup', 'heydoot'];
+const ALL_CHANNELS: MessageChannel[] = ['email', 'sms', 'whatsapp'];
+const AUDIENCES: NotificationAudience[] = ['team', 'actor', 'customer'];
 
 const CHANNEL_LABEL: Record<MessageChannel, string> = {
   email: 'Email',
@@ -90,6 +99,8 @@ export function SettingsPage() {
           <p className="mt-3 text-xs text-gray-400">Only an Owner can change channel settings.</p>
         )}
       </Card>
+
+      <RoutingRulesCard isOwner={isOwner} />
     </div>
   );
 }
@@ -177,5 +188,104 @@ function ChannelRow({
         {testError && <p className="mt-1 text-xs text-red-600">{testError}</p>}
       </td>
     </tr>
+  );
+}
+
+function RoutingRulesCard({ isOwner }: { isOwner: boolean }) {
+  const [rules, setRules] = useState<RoutingRule[]>([]);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    api
+      .getRoutingRules()
+      .then(setRules)
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Failed to load rules'));
+  }, []);
+
+  function patchRule(index: number, change: Partial<RoutingRule>) {
+    setSaved(false);
+    setRules((prev) => prev.map((r, i) => (i === index ? { ...r, ...change } : r)));
+  }
+
+  function toggleChannel(index: number, channel: MessageChannel) {
+    const rule = rules[index];
+    const has = rule.channels.includes(channel);
+    patchRule(index, {
+      channels: has ? rule.channels.filter((c) => c !== channel) : [...rule.channels, channel],
+    });
+  }
+
+  async function save() {
+    try {
+      setRules(await api.updateRoutingRules(rules));
+      setError('');
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to save rules');
+    }
+  }
+
+  return (
+    <Card title="Trigger rules — who hears about what">
+      <p className="mb-3 text-xs text-gray-500">
+        Each event can notify your team or (once consent is wired) the customer over the selected
+        channels. Customer delivery is held back until consent and contacts are configured.
+      </p>
+      <ErrorText>{error}</ErrorText>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-xs text-gray-500">
+            <th className="py-1.5">Event</th>
+            <th>Audience</th>
+            <th>Channels</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rules.map((rule, i) => (
+            <tr key={`${rule.event}-${i}`} className="border-t border-gray-100">
+              <td className="py-2 font-mono text-xs">{rule.event}</td>
+              <td>
+                <select
+                  className={selectClass}
+                  value={rule.audience}
+                  disabled={!isOwner}
+                  aria-label={`Audience for ${rule.event}`}
+                  onChange={(e) =>
+                    patchRule(i, { audience: e.target.value as NotificationAudience })
+                  }
+                >
+                  {AUDIENCES.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className="space-x-3 py-2">
+                {ALL_CHANNELS.map((ch) => (
+                  <label key={ch} className="inline-flex items-center gap-1 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={rule.channels.includes(ch)}
+                      disabled={!isOwner}
+                      aria-label={`${rule.event} ${ch}`}
+                      onChange={() => toggleChannel(i, ch)}
+                    />
+                    {CHANNEL_LABEL[ch]}
+                  </label>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {isOwner && (
+        <div className="mt-4 flex items-center gap-3">
+          <Button onClick={save}>Save rules</Button>
+          {saved && <span className="text-sm text-green-700">Saved.</span>}
+        </div>
+      )}
+    </Card>
   );
 }

@@ -12,6 +12,7 @@ import type {
   PublicUser,
   Quote,
   Role,
+  RoutingRule,
   Supplier,
   SupplierPO,
 } from './types';
@@ -160,4 +161,7 @@ export const api = {
     request<ChannelConfig[]>('PUT', '/v1/notifications/channels', { channels }),
   testChannel: (channel: MessageChannel, to: string) =>
     request<DeliveryResult>('POST', '/v1/notifications/channels/test', { channel, to }),
+  getRoutingRules: () => request<RoutingRule[]>('GET', '/v1/notifications/rules'),
+  updateRoutingRules: (rules: RoutingRule[]) =>
+    request<RoutingRule[]>('PUT', '/v1/notifications/rules', { rules }),
 };

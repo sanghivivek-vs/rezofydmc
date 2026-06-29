@@ -17,12 +17,15 @@ import { GDPR_AUDIT_SINK } from '@modules/gdpr/api/tokens';
 import { OPS_AUDIT_SINK } from '@modules/operations/api/tokens';
 import { NotificationsController } from './api/notifications.controller';
 import { ChannelsController } from './api/channels.controller';
+import { RoutingController } from './api/routing.controller';
 import { EMAIL_SENDER, NOTIFICATION_REPOSITORY } from './api/tokens';
 import { LoggingEmailSender, type EmailSender } from './service/email-sender';
 import { NotificationsService } from './service/notifications.service';
 import { NotificationAuditSink } from './service/notification-audit-sink';
+import { NotificationDispatcher } from './service/notification-dispatcher';
 import { MessageService } from './service/message.service';
 import { ProviderRegistry } from './service/providers/provider-factory';
+import { CONSENT_GATE, DefaultConsentGate } from './service/consent-gate';
 import type { NotificationRepository } from './repository/notification.repository';
 
 const AUDIT_TOKENS = [
@@ -36,10 +39,12 @@ const AUDIT_TOKENS = [
 @Global()
 @Module({
   imports: [IdentityModule],
-  controllers: [NotificationsController, ChannelsController],
+  controllers: [NotificationsController, ChannelsController, RoutingController],
   providers: [
     ProviderRegistry,
     MessageService,
+    { provide: CONSENT_GATE, useClass: DefaultConsentGate },
+    NotificationDispatcher,
     { provide: EMAIL_SENDER, useClass: LoggingEmailSender },
     {
       provide: NotificationsService,

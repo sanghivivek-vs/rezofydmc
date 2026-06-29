@@ -172,3 +172,11 @@ export interface DeliveryResult {
   status: 'sent' | 'skipped' | 'failed';
   detail?: string;
 }
+
+export type NotificationAudience = 'team' | 'actor' | 'customer';
+
+export interface RoutingRule {
+  event: string;
+  audience: NotificationAudience;
+  channels: MessageChannel[];
+}

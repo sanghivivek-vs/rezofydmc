@@ -36,6 +36,23 @@ not store provider credentials in tenant data.
 - **Verifiable.** `POST /v1/notifications/channels/test` (Owner) sends a test
   message through a channel and returns the `DeliveryResult`.
 
+## Routing & consent (event → audience → channel)
+
+- **Routing rules** (`OrgSettings.notificationRules`) map each audit event to an
+  audience (`team` | `actor` | `customer`) and a channel set, per tenant, with
+  in-code defaults. Managed via `GET/PUT /v1/notifications/rules` (write: Owner).
+- **Dispatch.** `NotificationDispatcher` runs on every audit event (bound through
+  the same `NotificationAuditSink` as in-app notifications, so producers are
+  unchanged): it matches rules, resolves recipients, and delivers via
+  `MessageService`. It never throws — delivery failures don't break the write.
+- **Consent gate (fail-closed).** A `ConsentGate` port decides each send. The
+  default gate allows internal audiences (staff — legitimate interest) and
+  **denies customer/external delivery** until a consent-verifying gate and
+  contact resolution are wired (decisions #11). This keeps the platform from
+  messaging a customer without proven consent, by default.
+- Recipient resolution today covers internal staff (emails). SMS/WhatsApp to
+  staff and any customer delivery await phone/contact data (future slice).
+
 ## Consequences
 
 - Adding a provider = one adapter + one `ProviderRegistry` case + an env var.

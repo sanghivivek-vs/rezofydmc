@@ -9,6 +9,7 @@
 import type { CurrencyCode } from '@common/money/money';
 import type { OrgId } from '@common/tenancy/tenant-context';
 import type { ChannelConfig } from '@common/messaging/channel';
+import type { RoutingRule } from '@common/messaging/routing';
 
 export interface OrgSettings {
   readonly defaultCurrency: CurrencyCode;
@@ -21,6 +22,11 @@ export interface OrgSettings {
    * Optional for backward compatibility; absent means "no channels configured".
    */
   readonly channels?: ChannelConfig[];
+  /**
+   * Per-tenant routing rules (which event reaches which audience over which
+   * channels). Absent means the in-code defaults apply.
+   */
+  readonly notificationRules?: RoutingRule[];
 }
 
 export interface Organization {

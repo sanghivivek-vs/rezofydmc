@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SettingsPage } from './SettingsPage';
 import { api } from '../api/client';
-import type { ChannelConfig } from '../api/types';
+import type { ChannelConfig, RoutingRule } from '../api/types';
 
 vi.mock('../auth/AuthContext', () => ({
   useAuth: () => ({ isOwner: true }),
@@ -15,17 +15,20 @@ const channels: ChannelConfig[] = [
   { channel: 'whatsapp', enabled: false, provider: 'gupshup', from: 'DMC' },
 ];
 
+const rules: RoutingRule[] = [{ event: 'quote.sent', audience: 'team', channels: ['email'] }];
+
 describe('SettingsPage', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(api, 'getChannels').mockResolvedValue(channels);
+    vi.spyOn(api, 'getRoutingRules').mockResolvedValue(rules);
   });
 
   it('renders the configured channels', async () => {
     render(<SettingsPage />);
-    await waitFor(() => expect(screen.getByText('WhatsApp')).toBeInTheDocument());
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('SMS')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('Enable whatsapp')).toBeInTheDocument());
+    expect(screen.getByLabelText('Enable email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Enable sms')).toBeInTheDocument();
   });
 
   it('saves an edited channel config', async () => {
@@ -34,7 +37,7 @@ describe('SettingsPage', () => {
       .mockResolvedValue([{ ...channels[0], enabled: true }, channels[1], channels[2]]);
 
     render(<SettingsPage />);
-    await screen.findByText('Email');
+    await screen.findByLabelText('Enable email');
 
     await userEvent.click(screen.getByLabelText('Enable email'));
     await userEvent.click(screen.getByRole('button', { name: 'Save channels' }));
@@ -54,7 +57,7 @@ describe('SettingsPage', () => {
     });
 
     render(<SettingsPage />);
-    await screen.findByText('Email');
+    await screen.findByLabelText('Enable email');
 
     const testInputs = screen.getAllByPlaceholderText(/^test /);
     await userEvent.type(testInputs[0], 'x@acme.test');
@@ -62,5 +65,23 @@ describe('SettingsPage', () => {
     await userEvent.click(testButtons[0]);
 
     await waitFor(() => expect(screen.getByText('sent')).toBeInTheDocument());
+  });
+
+  it('saves edited routing rules (adds a channel to a rule)', async () => {
+    const saveSpy = vi
+      .spyOn(api, 'updateRoutingRules')
+      .mockResolvedValue([
+        { event: 'quote.sent', audience: 'team', channels: ['email', 'whatsapp'] },
+      ]);
+
+    render(<SettingsPage />);
+    await screen.findByText('quote.sent');
+
+    await userEvent.click(screen.getByLabelText('quote.sent whatsapp'));
+    await userEvent.click(screen.getByRole('button', { name: 'Save rules' }));
+
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    const sent = saveSpy.mock.calls[0][0];
+    expect(sent[0].channels).toContain('whatsapp');
   });
 });
