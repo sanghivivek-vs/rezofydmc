@@ -15,6 +15,49 @@ Sections 1–2 below are **Mode A**. Mode B/C are in **§8**. After the app is u
 §3–§7 (create a tenant, log in, what to click, super-admin) apply to all modes —
 just use the right base URL (`:5173` for dev, `:3000` for B/C).
 
+## 0. macOS quickstart (from scratch)
+
+```bash
+# 1. Install Homebrew (skip if you already have it)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Install Node.js 20+ LTS and git
+brew install node git
+node -v   # should print v20.x or newer
+
+# 3. Get the code (this feature branch)
+git clone -b claude/dmc-platform-build-guide-s9to6n \
+  https://github.com/sanghivivek-vs/rezofydmc.git
+cd rezofydmc
+
+# 4. Install backend dependencies
+npm install
+
+# 5. Run the whole app on one URL (builds the web UI, then serves it)
+npm run deploy:local
+# → open http://localhost:3000
+```
+
+`deploy:local` uses safe default secrets and in-memory data (resets on restart).
+Leave it running; open a **second terminal** for the curl commands below.
+
+```bash
+# 6. Create your first tenant + Owner login
+curl -s -X POST localhost:3000/v1/auth/register-org -H 'content-type: application/json' \
+  -d '{"org":{"name":"Alpine DMC","defaultCurrency":"INR"},
+       "owner":{"email":"owner@alpine.test","name":"Olivia","password":"password123"}}'
+# Now log in at http://localhost:3000 with owner@alpine.test / password123
+
+# 7. (Optional) Create the super-admin, then open http://localhost:3000/platform
+curl -s -X POST localhost:3000/v1/platform/auth/bootstrap \
+  -H 'x-platform-bootstrap: local-bootstrap-secret' -H 'content-type: application/json' \
+  -d '{"email":"root@platform.test","name":"Root","password":"rootpass123"}'
+```
+
+To stop: press `Ctrl+C` in the first terminal. To start again later, just
+`cd rezofydmc && npm run deploy:local`. Apple-silicon (M-series) and Intel Macs
+both work.
+
 ## 1. Start the API
 
 ```bash
