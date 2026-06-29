@@ -173,6 +173,40 @@ export interface DeliveryResult {
   detail?: string;
 }
 
+export interface DashboardReport {
+  currency: string;
+  enquiries: {
+    total: number;
+    byStatus: Record<string, number>;
+    won: number;
+    lost: number;
+    winRatePercent: number;
+    recent: {
+      id: string;
+      agencyId: string;
+      destinations: string[];
+      status: string;
+      createdAt: string;
+    }[];
+  };
+  quotes: { count: number; sent: number; accepted: number; openValue: Money };
+  bookings: {
+    total: number;
+    confirming: number;
+    confirmed: number;
+    cancelled: number;
+    itemsToConfirm: number;
+  };
+  revenue: { sell: Money; cost: Money; margin: Money; marginPercent: number } | null;
+  upcoming: {
+    id: string;
+    agencyId: string;
+    destinations: string[];
+    status: string;
+    quoteDeadline: string;
+  }[];
+}
+
 export type NotificationAudience = 'team' | 'actor' | 'customer';
 
 export interface RoutingRule {

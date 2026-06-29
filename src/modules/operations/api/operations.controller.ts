@@ -64,4 +64,9 @@ export class OperationsController {
   pipeline(@CurrentTenant() ctx: TenantContext) {
     return this.ops.pipelineReport(ctx);
   }
+
+  @Get('v1/reports/dashboard')
+  dashboard(@CurrentTenant() ctx: TenantContext) {
+    return this.ops.dashboardReport(ctx);
+  }
 }

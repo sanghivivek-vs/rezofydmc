@@ -4,6 +4,7 @@ import {
   Bell,
   CalendarCheck,
   Inbox,
+  LayoutDashboard,
   LayoutGrid,
   LogOut,
   Package,
@@ -22,6 +23,7 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/enquiries', label: 'Enquiries', icon: Inbox },
   { to: '/catalog', label: 'Catalog', icon: Package },
   { to: '/bookings', label: 'Bookings', icon: CalendarCheck },

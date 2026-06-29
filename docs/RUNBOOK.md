@@ -89,6 +89,18 @@ curl -s -X POST localhost:3000/v1/auth/register-org -H 'content-type: applicatio
 
 Then open `http://localhost:5173`, log in with `owner@alpine.test / password123`.
 
+### Seed realistic demo data (recommended)
+
+So the app isn't empty, populate a demo tenant ("Wanderlust DMC") with suppliers,
+rate cards, enquiries across the pipeline, itineraries, quotes, and bookings:
+
+```bash
+npm run seed                       # against http://localhost:3000 by default
+# BASE=http://localhost:8080 npm run seed   # custom URL
+```
+
+Then log in with **owner@demo.test / demo1234** — the Dashboard lands populated.
+
 ## 4. What to click
 
 - **Team** — add team members, change roles, enable/disable accounts, reset

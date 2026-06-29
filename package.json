@@ -12,6 +12,7 @@
     "start:prisma": "PERSISTENCE=prisma ts-node -r tsconfig-paths/register src/app/main.ts",
     "build:web": "npm --prefix web install && npm --prefix web run build",
     "deploy:local": "bash scripts/deploy-local.sh",
+    "seed": "node scripts/seed-demo.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:prisma": "tsc -p tsconfig.prisma.json --noEmit",
     "prisma:generate": "prisma generate",

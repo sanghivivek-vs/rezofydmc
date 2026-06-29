@@ -2,6 +2,7 @@ import type {
   Booking,
   ChannelConfig,
   Component,
+  DashboardReport,
   DeliveryResult,
   Enquiry,
   Itinerary,
@@ -161,6 +162,7 @@ export const api = {
   supplierPOs: (bookingId: string) =>
     request<SupplierPO[]>('GET', `/v1/bookings/${bookingId}/supplier-pos`),
   pipeline: () => request<PipelineReport>('GET', '/v1/reports/pipeline'),
+  dashboard: () => request<DashboardReport>('GET', '/v1/reports/dashboard'),
 
   // Itinerary
   listItineraries: (enquiryId: string) =>

@@ -19,7 +19,7 @@ export function LoginPage() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate('/enquiries');
+      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Login failed');
     } finally {

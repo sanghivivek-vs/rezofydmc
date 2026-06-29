@@ -7,7 +7,7 @@
  * status mutations are audited (Build guide §9).
  */
 
-import { type TenantContext } from '@common/tenancy/tenant-context';
+import { type TenantContext, canSeeMargins } from '@common/tenancy/tenant-context';
 import { NotFoundError, ValidationError } from '@common/errors/errors';
 import type { Clock } from '@common/clock/clock';
 import type { IdGenerator } from '@common/ids/id';
@@ -34,6 +34,56 @@ export interface PipelineReport {
   readonly total: number;
   readonly won: number;
   readonly lost: number;
+}
+
+interface Money {
+  readonly amountMinor: number;
+  readonly currency: string;
+}
+
+export interface DashboardReport {
+  readonly currency: string;
+  readonly enquiries: {
+    readonly total: number;
+    readonly byStatus: Record<string, number>;
+    readonly won: number;
+    readonly lost: number;
+    readonly winRatePercent: number;
+    readonly recent: Array<{
+      readonly id: string;
+      readonly agencyId: string;
+      readonly destinations: string[];
+      readonly status: string;
+      readonly createdAt: string;
+    }>;
+  };
+  readonly quotes: {
+    readonly count: number;
+    readonly sent: number;
+    readonly accepted: number;
+    readonly openValue: Money; // sell total of Draft/Sent quotes
+  };
+  readonly bookings: {
+    readonly total: number;
+    readonly confirming: number;
+    readonly confirmed: number;
+    readonly cancelled: number;
+    readonly itemsToConfirm: number;
+  };
+  /** Owner-only — null for non-Owner roles. */
+  readonly revenue: {
+    readonly sell: Money;
+    readonly cost: Money;
+    readonly margin: Money;
+    readonly marginPercent: number;
+  } | null;
+  readonly upcoming: Array<{
+    readonly id: string;
+    readonly agencyId: string;
+    readonly destinations: string[];
+    readonly status: string;
+    readonly quoteDeadline: string;
+  }>;
 }
 
 export class OperationsService {
@@ -183,6 +233,108 @@ export class OperationsService {
       total: enquiries.length,
       won: byStatus.Won ?? 0,
       lost: byStatus.Lost ?? 0,
+    };
+  }
+
+  /**
+   * Dashboard aggregate (Build guide §11). Composes enquiries, quotes, and
+   * bookings into the headline metrics the operations console lands on. Revenue
+   * (cost/margin) is Owner-only — gated server-side via canSeeMargins.
+   */
+  async dashboardReport(ctx: TenantContext): Promise<DashboardReport> {
+    const enquiries = await this.enquiries.list(ctx);
+    const byStatus: Record<string, number> = {};
+    for (const e of enquiries) byStatus[e.status] = (byStatus[e.status] ?? 0) + 1;
+    const won = byStatus.Won ?? 0;
+    const lost = byStatus.Lost ?? 0;
+    const decided = won + lost;
+    const winRatePercent = decided > 0 ? Math.round((won / decided) * 100) : 0;
+
+    const recent = [...enquiries]
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .slice(0, 6)
+      .map((e) => ({
+        id: e.id,
+        agencyId: e.agencyId,
+        destinations: e.destinations,
+        status: e.status,
+        createdAt: e.createdAt,
+      }));
+
+    const OPEN = new Set(['New', 'In Progress', 'Quoted', 'Revision Requested']);
+    const upcoming = enquiries
+      .filter((e) => OPEN.has(e.status))
+      .sort((a, b) => (a.quoteDeadline < b.quoteDeadline ? -1 : 1))
+      .slice(0, 6)
+      .map((e) => ({
+        id: e.id,
+        agencyId: e.agencyId,
+        destinations: e.destinations,
+        status: e.status,
+        quoteDeadline: e.quoteDeadline,
+      }));
+
+    let currency = '';
+    let qCount = 0;
+    let qSent = 0;
+    let qAccepted = 0;
+    let openValueMinor = 0;
+    let revSellMinor = 0;
+    let revCostMinor = 0;
+    let revMarginMinor = 0;
+    const owner = canSeeMargins(ctx);
+    for (const e of enquiries) {
+      const quotes = await this.quotation.listByEnquiry(ctx, e.id);
+      for (const q of quotes) {
+        qCount += 1;
+        if (!currency) currency = q.currency;
+        if (q.status === 'Sent') qSent += 1;
+        if (q.status === 'Accepted') qAccepted += 1;
+        if (q.status === 'Draft' || q.status === 'Sent') {
+          openValueMinor += q.sell.total.amountMinor;
+        }
+        if (q.status === 'Accepted' && q.margin) {
+          revSellMinor += q.margin.totalSell.amountMinor;
+          revCostMinor += q.margin.totalCost.amountMinor;
+          revMarginMinor += q.margin.totalMargin.amountMinor;
+        }
+      }
+    }
+    const cur = currency || 'USD';
+
+    const bookings = await this.bookings.list(ctx);
+    let confirming = 0;
+    let confirmed = 0;
+    let cancelled = 0;
+    let itemsToConfirm = 0;
+    for (const b of bookings) {
+      if (b.status === 'Confirming') confirming += 1;
+      else if (b.status === 'Confirmed') confirmed += 1;
+      else if (b.status === 'Cancelled') cancelled += 1;
+      itemsToConfirm += b.items.filter((it) => it.status === 'Pending').length;
+    }
+
+    const revenue = owner
+      ? {
+          sell: { amountMinor: revSellMinor, currency: cur },
+          cost: { amountMinor: revCostMinor, currency: cur },
+          margin: { amountMinor: revMarginMinor, currency: cur },
+          marginPercent: revCostMinor > 0 ? Math.round((revMarginMinor / revCostMinor) * 100) : 0,
+        }
+      : null;
+
+    return {
+      currency: cur,
+      enquiries: { total: enquiries.length, byStatus, won, lost, winRatePercent, recent },
+      quotes: {
+        count: qCount,
+        sent: qSent,
+        accepted: qAccepted,
+        openValue: { amountMinor: openValueMinor, currency: cur },
+      },
+      bookings: { total: bookings.length, confirming, confirmed, cancelled, itemsToConfirm },
+      revenue,
+      upcoming,
     };
   }
 

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { EnquiryDetailPage } from './pages/EnquiryDetailPage';
 import { CatalogPage } from './pages/CatalogPage';
@@ -32,6 +33,7 @@ export function App() {
           </RequireAuth>
         }
       >
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/enquiries" element={<EnquiriesPage />} />
         <Route path="/enquiries/:id" element={<EnquiryDetailPage />} />
         <Route path="/enquiries/:id/itinerary" element={<ItineraryPage />} />
@@ -43,7 +45,7 @@ export function App() {
         <Route path="/users" element={<UsersPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/enquiries" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
