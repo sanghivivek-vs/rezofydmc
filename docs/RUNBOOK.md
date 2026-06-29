@@ -1,7 +1,19 @@
 # Runbook — view & test the DMC platform locally
 
-Two processes: the **API** (NestJS, port 3000) and the **SPA** (Vite, port 5173).
-The SPA dev server proxies `/v1/*` to the API.
+You can run the whole thing on your own machine — no cloud required. Pick one:
+
+| Mode                                           | Command                                       | URL                   | Data                  | Needs   |
+| ---------------------------------------------- | --------------------------------------------- | --------------------- | --------------------- | ------- |
+| **A. Dev** (hot reload)                        | `npm run start:dev` + `cd web && npm run dev` | http://localhost:5173 | in-memory             | Node 20 |
+| **B. One-command deploy** (API serves the SPA) | `npm run deploy:local`                        | http://localhost:3000 | in-memory*            | Node 20 |
+| **C. Docker + PostgreSQL**                     | `docker compose up --build`                   | http://localhost:3000 | PostgreSQL (persists) | Docker  |
+
+\* Mode B can also use PostgreSQL — set `PERSISTENCE=prisma` + `DATABASE_URL`
+(start Postgres with `docker compose up -d postgres`, then `npm run prisma:migrate`).
+
+Sections 1–2 below are **Mode A**. Mode B/C are in **§8**. After the app is up,
+§3–§7 (create a tenant, log in, what to click, super-admin) apply to all modes —
+just use the right base URL (`:5173` for dev, `:3000` for B/C).
 
 ## 1. Start the API
 
@@ -116,6 +128,40 @@ curl -s localhost:3000/v1/platform/tenants -H "authorization: Bearer $PTOKEN"
 curl -s -X POST localhost:3000/v1/platform/broadcast -H "authorization: Bearer $PTOKEN" \
   -H 'content-type: application/json' -d '{"subject":"Notice","message":"Hello tenants"}'
 ```
+
+## 8. Local deploy (one URL)
+
+### Mode B — single process, no Docker
+
+The API serves the built SPA, so the whole app is at **http://localhost:3000**:
+
+```bash
+npm run deploy:local
+# builds web/ then starts the API with SERVE_WEB=web/dist
+```
+
+It uses safe default secrets and in-memory data. Override anything via the env:
+
+```bash
+JWT_SECRET=my-secret PORT=8080 npm run deploy:local            # custom secret/port
+PERSISTENCE=prisma DATABASE_URL=postgres://… npm run deploy:local  # use PostgreSQL
+```
+
+Manual equivalent: `npm run build:web` then
+`SERVE_WEB=web/dist JWT_SECRET=… npm start`.
+
+### Mode C — Docker + PostgreSQL (persistent)
+
+```bash
+docker compose up --build      # → http://localhost:3000, data in a Postgres volume
+```
+
+Migrations run automatically on start. To stop and wipe the DB volume:
+`docker compose down -v`. (Override `JWT_SECRET` / `PLATFORM_BOOTSTRAP_SECRET`
+via your shell or a `.env` file — see `.env.example`.)
+
+Then bootstrap the super-admin (§7) and register a tenant (§3) against
+`http://localhost:3000`.
 
 ## Tests
 
