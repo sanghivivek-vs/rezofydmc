@@ -5,6 +5,7 @@ import type {
   DeliveryResult,
   MessageChannel,
   NotificationAudience,
+  OrgInfo,
   ProviderName,
   RoutingRule,
 } from '../api/types';
@@ -101,6 +102,7 @@ export function SettingsPage() {
       </Card>
 
       <RoutingRulesCard isOwner={isOwner} />
+      <CustomerMessagingCard isOwner={isOwner} />
     </div>
   );
 }
@@ -188,6 +190,65 @@ function ChannelRow({
         {testError && <p className="mt-1 text-xs text-red-600">{testError}</p>}
       </td>
     </tr>
+  );
+}
+
+function CustomerMessagingCard({ isOwner }: { isOwner: boolean }) {
+  const [org, setOrg] = useState<OrgInfo | null>(null);
+  const [error, setError] = useState('');
+
+  async function reload() {
+    try {
+      setOrg(await api.getOrg());
+      setError('');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to load org');
+    }
+  }
+
+  useEffect(() => {
+    void reload();
+  }, []);
+
+  const allowed = org?.governance.customerMessagingAllowed ?? false;
+  const enabled = org?.settings.customerMessagingEnabled === true;
+
+  async function toggle() {
+    try {
+      setOrg(await api.setCustomerMessagingEnabled(!enabled));
+      setError('');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to update');
+    }
+  }
+
+  return (
+    <Card title="Customer & partner messaging">
+      <p className="mb-3 text-xs text-gray-500">
+        Turn on direct messaging to your customers and partners. This only takes effect once the
+        platform operator has allowed it for your account, and consent is in place.
+      </p>
+      <ErrorText>{error}</ErrorText>
+      <div className="flex items-center gap-3 text-sm">
+        <label className="inline-flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={enabled}
+            disabled={!isOwner || !allowed}
+            aria-label="Enable customer messaging"
+            onChange={toggle}
+          />
+          Enable customer/partner messaging
+        </label>
+        <Badge>{allowed ? 'platform: allowed' : 'platform: not yet allowed'}</Badge>
+        {enabled && allowed && <Badge>effective</Badge>}
+      </div>
+      {!allowed && (
+        <p className="mt-2 text-xs text-gray-400">
+          Ask your platform operator to enable customer messaging for your organization.
+        </p>
+      )}
+    </Card>
   );
 }
 

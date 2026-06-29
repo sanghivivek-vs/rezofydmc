@@ -12,6 +12,7 @@ import { ItineraryPage } from './pages/ItineraryPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { UsersPage } from './pages/UsersPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { PlatformConsole } from './platform/PlatformConsole';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
@@ -23,6 +24,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/platform" element={<PlatformConsole />} />
       <Route
         element={
           <RequireAuth>

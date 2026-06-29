@@ -180,3 +180,37 @@ export interface RoutingRule {
   audience: NotificationAudience;
   channels: MessageChannel[];
 }
+
+// Platform (super-admin) tier
+export interface PlatformAdmin {
+  id: string;
+  email: string;
+  name: string;
+  status: string;
+}
+
+export interface TenantSummary {
+  id: string;
+  name: string;
+  status: string;
+  customerMessagingAllowed: boolean;
+  customerMessagingEnabled: boolean;
+  customerMessagingEffective: boolean;
+  enabledChannels: string[];
+}
+
+export interface BroadcastResult {
+  tenants: number;
+  emailsAttempted: number;
+  emailsSent: number;
+  emailsSkipped: number;
+}
+
+// Org (tenant) info as returned by GET /v1/org
+export interface OrgInfo {
+  id: string;
+  name: string;
+  status: string;
+  settings: { customerMessagingEnabled?: boolean; [k: string]: unknown };
+  governance: { customerMessagingAllowed: boolean };
+}

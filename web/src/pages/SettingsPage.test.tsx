@@ -22,6 +22,13 @@ describe('SettingsPage', () => {
     vi.restoreAllMocks();
     vi.spyOn(api, 'getChannels').mockResolvedValue(channels);
     vi.spyOn(api, 'getRoutingRules').mockResolvedValue(rules);
+    vi.spyOn(api, 'getOrg').mockResolvedValue({
+      id: 'org1',
+      name: 'Alpine',
+      status: 'active',
+      settings: { customerMessagingEnabled: false },
+      governance: { customerMessagingAllowed: false },
+    });
   });
 
   it('renders the configured channels', async () => {

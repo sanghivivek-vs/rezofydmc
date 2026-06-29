@@ -77,6 +77,46 @@ Set credentials in the API environment, then point a channel's `provider` at it:
 Credentials live only in server config — never in tenant data or the API
 responses (ADR 0007, ADR 0010).
 
+## 7. Super-admin (platform) console
+
+The platform tier sits ABOVE all tenants with its own login. Start the API with
+a bootstrap secret:
+
+```bash
+JWT_SECRET=dev-secret PLATFORM_BOOTSTRAP_SECRET=boot-secret PORT=3000 npm run start:dev
+```
+
+Create the first super-admin (one-time; refuses once an admin exists):
+
+```bash
+curl -s -X POST localhost:3000/v1/platform/auth/bootstrap \
+  -H 'x-platform-bootstrap: boot-secret' -H 'content-type: application/json' \
+  -d '{"email":"root@platform.test","name":"Root","password":"rootpass123"}'
+```
+
+Then open **`http://localhost:5173/platform`** and sign in with
+`root@platform.test / rootpass123`. From the console you can:
+
+- **Broadcast** an announcement to all tenants (in-app + email via each tenant's
+  channel).
+- **Suspend / unsuspend** a tenant — a suspended tenant's users cannot log in.
+- **Allow / block** a tenant's customer messaging (platform governance).
+
+The tenant side: in the tenant app, **Settings → Customer & partner messaging**
+lets a tenant Owner turn customer messaging on — it only becomes _effective_ once
+the platform has allowed it (and consent is in place).
+
+Same powers via the API:
+
+```bash
+PTOKEN=$(curl -s -X POST localhost:3000/v1/platform/auth/login \
+  -H 'content-type: application/json' \
+  -d '{"email":"root@platform.test","password":"rootpass123"}' | jq -r .token)
+curl -s localhost:3000/v1/platform/tenants -H "authorization: Bearer $PTOKEN"
+curl -s -X POST localhost:3000/v1/platform/broadcast -H "authorization: Bearer $PTOKEN" \
+  -H 'content-type: application/json' -d '{"subject":"Notice","message":"Hello tenants"}'
+```
+
 ## Tests
 
 ```bash

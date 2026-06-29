@@ -15,9 +15,14 @@ import type {
   RoutingRule,
   Supplier,
   SupplierPO,
+  BroadcastResult,
+  OrgInfo,
+  PlatformAdmin,
+  TenantSummary,
 } from './types';
 
 const TOKEN_KEY = 'dmc.token';
+const PLATFORM_TOKEN_KEY = 'dmc.platformToken';
 
 export class ApiError extends Error {
   constructor(
@@ -36,6 +41,33 @@ export function getToken(): string | null {
 export function setToken(token: string | null): void {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
+}
+
+export function getPlatformToken(): string | null {
+  return localStorage.getItem(PLATFORM_TOKEN_KEY);
+}
+export function setPlatformToken(token: string | null): void {
+  if (token) localStorage.setItem(PLATFORM_TOKEN_KEY, token);
+  else localStorage.removeItem(PLATFORM_TOKEN_KEY);
+}
+
+async function platformRequest<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  const token = getPlatformToken();
+  if (token) headers.authorization = `Bearer ${token}`;
+  const res = await fetch(path, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : undefined;
+  if (!res.ok) {
+    const err = (data && data.error) || {};
+    throw new ApiError(res.status, err.code ?? 'ERROR', err.message ?? res.statusText);
+  }
+  return data as T;
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -69,6 +101,11 @@ export const api = {
     owner: { email: string; name: string; password: string };
   }) => request<{ token: string; owner: PublicUser }>('POST', '/v1/auth/register-org', input),
   me: () => request<PublicUser>('GET', '/v1/users/me'),
+
+  // Org (tenant) settings
+  getOrg: () => request<OrgInfo>('GET', '/v1/org'),
+  setCustomerMessagingEnabled: (enabled: boolean) =>
+    request<OrgInfo>('PATCH', '/v1/org/settings', { customerMessagingEnabled: enabled }),
 
   // User administration
   listUsers: () => request<PublicUser[]>('GET', '/v1/users'),
@@ -164,4 +201,25 @@ export const api = {
   getRoutingRules: () => request<RoutingRule[]>('GET', '/v1/notifications/rules'),
   updateRoutingRules: (rules: RoutingRule[]) =>
     request<RoutingRule[]>('PUT', '/v1/notifications/rules', { rules }),
+};
+
+/** Super-admin (platform) API — uses a separate platform token. */
+export const platformApi = {
+  login: (email: string, password: string) =>
+    platformRequest<{ token: string; admin: PlatformAdmin }>('POST', '/v1/platform/auth/login', {
+      email,
+      password,
+    }),
+  me: () => platformRequest<PlatformAdmin>('GET', '/v1/platform/me'),
+  listTenants: () => platformRequest<TenantSummary[]>('GET', '/v1/platform/tenants'),
+  suspendTenant: (orgId: string) =>
+    platformRequest<TenantSummary>('POST', `/v1/platform/tenants/${orgId}/suspend`),
+  unsuspendTenant: (orgId: string) =>
+    platformRequest<TenantSummary>('POST', `/v1/platform/tenants/${orgId}/unsuspend`),
+  setCustomerMessaging: (orgId: string, allowed: boolean) =>
+    platformRequest<TenantSummary>('POST', `/v1/platform/tenants/${orgId}/customer-messaging`, {
+      allowed,
+    }),
+  broadcast: (input: { subject: string; message: string; orgIds?: string[] }) =>
+    platformRequest<BroadcastResult>('POST', '/v1/platform/broadcast', input),
 };
