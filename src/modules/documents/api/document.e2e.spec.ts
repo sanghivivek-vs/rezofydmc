@@ -107,4 +107,23 @@ describe('Document API (e2e)', () => {
   it('requires authentication', async () => {
     await api().get(`/v1/quotes/${quoteId}/document`).expect(401);
   });
+
+  it('renders a branded booking voucher with the supplier and confirmation refs', async () => {
+    const booking = await api().post(`/v1/quotes/${quoteId}/accept`).set(ownerAuth).expect(201);
+    const itemId = booking.body.items[0].id;
+    await api()
+      .post(`/v1/bookings/${booking.body.id}/items/${itemId}/confirm`)
+      .set(ownerAuth)
+      .send({ confirmationRef: 'JF-12345' })
+      .expect(201);
+
+    const res = await api()
+      .get(`/v1/bookings/${booking.body.id}/voucher`)
+      .set(salesAuth)
+      .expect(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Service Voucher');
+    expect(res.text).toContain('Jungfrau');
+    expect(res.text).toContain('JF-12345');
+  });
 });

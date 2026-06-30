@@ -10,6 +10,7 @@ import {
 } from '@modules/catalog';
 import { OrgService, InMemoryOrgRepository } from '@modules/identity-org';
 import { ItineraryService, InMemoryItineraryRepository } from '@modules/itinerary';
+import { OperationsService, InMemoryBookingRepository } from '@modules/operations';
 import { fixedClock } from '@common/clock/clock';
 import { sequentialIdGenerator } from '@common/ids/id';
 import { money } from '@common/money/money';
@@ -53,12 +54,21 @@ async function setup() {
     clock,
     idGenerator: id(),
   });
+  const operations = new OperationsService({
+    bookings: new InMemoryBookingRepository(),
+    quotation,
+    catalog,
+    enquiries,
+    clock,
+    idGenerator: id(),
+  });
   const documents = new DocumentService({
     renderer: new HtmlDocumentRenderer(),
     quotation,
     enquiries,
     orgs,
     itineraries,
+    operations,
   });
 
   const org = await orgs.create({

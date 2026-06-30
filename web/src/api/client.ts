@@ -186,6 +186,7 @@ export const api = {
     }),
   supplierPOs: (bookingId: string) =>
     request<SupplierPO[]>('GET', `/v1/bookings/${bookingId}/supplier-pos`),
+  bookingVoucherUrl: (id: string) => `/v1/bookings/${id}/voucher`,
   pipeline: () => request<PipelineReport>('GET', '/v1/reports/pipeline'),
   dashboard: () => request<DashboardReport>('GET', '/v1/reports/dashboard'),
 

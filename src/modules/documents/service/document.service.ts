@@ -16,6 +16,7 @@ import { QuotationService } from '@modules/quotation';
 import { EnquiryService, type Enquiry } from '@modules/enquiry-intake';
 import { OrgService, type Organization } from '@modules/identity-org';
 import { ItineraryService, type Itinerary } from '@modules/itinerary';
+import { OperationsService, type BookingItem } from '@modules/operations';
 import type { RenderedDocument } from '../domain/document';
 import { type DocumentRenderer, escapeHtml } from './document-renderer';
 
@@ -25,6 +26,7 @@ export interface DocumentServiceDeps {
   readonly enquiries: EnquiryService;
   readonly orgs: OrgService;
   readonly itineraries: ItineraryService;
+  readonly operations: OperationsService;
 }
 
 export class DocumentService {
@@ -33,6 +35,7 @@ export class DocumentService {
   private readonly enquiries: EnquiryService;
   private readonly orgs: OrgService;
   private readonly itineraries: ItineraryService;
+  private readonly operations: OperationsService;
 
   constructor(deps: DocumentServiceDeps) {
     this.renderer = deps.renderer;
@@ -40,6 +43,31 @@ export class DocumentService {
     this.enquiries = deps.enquiries;
     this.orgs = deps.orgs;
     this.itineraries = deps.itineraries;
+    this.operations = deps.operations;
+  }
+
+  /**
+   * Branded service voucher for a booking: the confirmed services grouped by
+   * supplier, with confirmation references. Readable by any authenticated tenant
+   * user (sell-side only — no cost/margin).
+   */
+  async bookingVoucher(ctx: TenantContext, bookingId: string): Promise<RenderedDocument> {
+    const booking = await this.operations.getBooking(ctx, bookingId);
+    const enquiry = await this.enquiries.getById(ctx, booking.enquiryId);
+    const org = await this.orgs.getCurrent(ctx);
+
+    const bodyHtml = [
+      header(org, `Service Voucher — Booking ${escapeHtml(booking.id)}`),
+      `<p class="muted">Status: ${escapeHtml(booking.status)} · Quote ${escapeHtml(booking.quoteId)}</p>`,
+      enquirySummary(enquiry),
+      voucherItems(booking.items),
+      `<p class="muted">Please present this voucher to the service provider on arrival.</p>`,
+    ].join('\n');
+
+    return this.renderer.render(
+      { title: `Voucher ${booking.id}`, bodyHtml },
+      `voucher-${booking.id}`,
+    );
   }
 
   /** Client-facing quote + itinerary document (sell-side only). */
@@ -102,6 +130,29 @@ function enquirySummary(enquiry: Enquiry): string {
   <tr><th>Pax</th><td>${pax.adults} adult(s), ${pax.children.length} child(ren), ${pax.infants} infant(s)</td></tr>
   <tr><th>Quote deadline</th><td>${escapeHtml(enquiry.quoteDeadline)}</td></tr>
 </table>`;
+}
+
+function voucherItems(items: BookingItem[]): string {
+  const bySupplier = new Map<string, BookingItem[]>();
+  for (const it of items) {
+    const key = it.supplierName ?? 'Unassigned';
+    const list = bySupplier.get(key) ?? [];
+    list.push(it);
+    bySupplier.set(key, list);
+  }
+  return [...bySupplier.entries()]
+    .map(([supplier, list]) => {
+      const rows = list
+        .map(
+          (i) =>
+            `<tr><td>${escapeHtml(i.description)}</td><td>${escapeHtml(i.status)}</td>` +
+            `<td>${escapeHtml(i.confirmationRef ?? '—')}</td></tr>`,
+        )
+        .join('');
+      return `<h3>${escapeHtml(supplier)}</h3>
+<table><tr><th>Service</th><th>Status</th><th>Confirmation ref</th></tr>${rows}</table>`;
+    })
+    .join('\n');
 }
 
 function itinerarySection(itinerary: Itinerary): string {
