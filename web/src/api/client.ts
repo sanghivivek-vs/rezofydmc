@@ -12,6 +12,7 @@ import type {
   PipelineReport,
   PublicUser,
   Quote,
+  Rate,
   Role,
   RoutingRule,
   Supplier,
@@ -130,15 +131,31 @@ export const api = {
 
   // Catalog
   listSuppliers: () => request<Supplier[]>('GET', '/v1/suppliers'),
-  createSupplier: (input: { name: string; currency: string; type?: string }) =>
-    request<Supplier>('POST', '/v1/suppliers', input),
+  createSupplier: (input: {
+    name: string;
+    currency: string;
+    type?: string;
+    region?: string;
+    contact?: string;
+  }) => request<Supplier>('POST', '/v1/suppliers', input),
   listComponents: () => request<Component[]>('GET', '/v1/components'),
-  createComponent: (input: { type: string; supplierId: string; name: string; unitBasis: string }) =>
-    request<Component>('POST', '/v1/components', input),
+  createComponent: (input: {
+    type: string;
+    supplierId: string;
+    name: string;
+    unitBasis: string;
+    notes?: string;
+  }) => request<Component>('POST', '/v1/components', input),
+  listRates: (componentId: string) => request<Rate[]>('GET', `/v1/components/${componentId}/rates`),
   addRate: (
     componentId: string,
-    input: { net: { amountMinor: number; currency: string }; validFrom: string; validTo: string },
-  ) => request<unknown>('POST', `/v1/components/${componentId}/rates`, input),
+    input: {
+      net: { amountMinor: number; currency: string };
+      validFrom: string;
+      validTo: string;
+      season?: string;
+    },
+  ) => request<Rate>('POST', `/v1/components/${componentId}/rates`, input),
 
   // Quotes
   listQuotes: (enquiryId: string) =>

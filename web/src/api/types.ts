@@ -39,6 +39,8 @@ export interface Supplier {
   name: string;
   currency: string;
   type?: string;
+  region?: string;
+  contact?: string;
 }
 
 export interface Component {
@@ -47,6 +49,17 @@ export interface Component {
   supplierId: string;
   name: string;
   unitBasis: string;
+  notes?: string;
+}
+
+export interface Rate {
+  id: string;
+  componentId: string;
+  unitBasis: string;
+  net: Money;
+  validFrom: string;
+  validTo: string;
+  season?: string;
 }
 
 export interface SellView {
