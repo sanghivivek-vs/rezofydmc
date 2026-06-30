@@ -24,7 +24,7 @@ is a **modular monolith**: modules live in one repo but stay decoupled.
 | `catalog`                   | ✅ built    | Suppliers, components, rate cards (seasons, slabs, child rules). JWT-secured REST, role-gated edits, tenant-scoped. Bridges rates into the costing engine (`listCostingRates`). e2e-tested. |
 | `itinerary`                 | ✅ built    | Versioned itineraries: days + timed segments (type, supplier, booking status validated against the org set, optional component link). `/v1/itineraries`, segment status updates audited. e2e-tested. |
 | `documents`                 | ✅ built    | Client quote+itinerary document and owner-only costing sheet via a `DocumentRenderer` port (HTML now, PDF swappable). `GET /v1/quotes/:id/document` & `/costing-sheet`. e2e-tested. |
-| agency-crm                  | ⏳ planned  | Counterparty records, contacts.                             |
+| `agency-crm`                | ✅ built    | Counterparty CRM: agencies (type/country/contact details), contacts (primary + role), and interaction history (call/email/meeting/note). Tenant-scoped, JWT-secured, role-gated edits. `/v1/crm/*`. e2e-tested; Prisma models + migration 0012. |
 | documents                   | ⏳ planned  | Itinerary + costing PDF generation, branding.               |
 | `operations`                | ✅ built    | Phase 2: quote accept/reject (manual + signed inbound webhook) → bookings, item confirmation, supplier POs, pipeline report. Vouchers/payments are follow-ups. |
 | integration                 | ⏳ planned  | API + webhooks to/from the Tour Agency platform (§6).       |

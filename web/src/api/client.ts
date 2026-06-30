@@ -1,10 +1,15 @@
 import type {
+  Agency,
+  AgencyType,
   Booking,
   ChannelConfig,
   Component,
+  Contact,
   DashboardReport,
   DeliveryResult,
   Enquiry,
+  Interaction,
+  InteractionType,
   Itinerary,
   LoginResult,
   MessageChannel,
@@ -214,6 +219,55 @@ export const api = {
     request<Itinerary>('PATCH', `/v1/itineraries/${itineraryId}/segments/${segmentId}/status`, {
       bookingStatus,
     }),
+
+  // Agency CRM
+  listAgencies: () => request<Agency[]>('GET', '/v1/crm/agencies'),
+  getAgency: (id: string) => request<Agency>('GET', `/v1/crm/agencies/${id}`),
+  createAgency: (input: {
+    name: string;
+    type?: AgencyType;
+    email?: string;
+    phone?: string;
+    country?: string;
+    website?: string;
+    notes?: string;
+  }) => request<Agency>('POST', '/v1/crm/agencies', input),
+  updateAgency: (
+    id: string,
+    input: Partial<{
+      name: string;
+      type: AgencyType;
+      email: string;
+      phone: string;
+      country: string;
+      website: string;
+      notes: string;
+      status: 'active' | 'inactive';
+    }>,
+  ) => request<Agency>('PATCH', `/v1/crm/agencies/${id}`, input),
+  listContacts: (agencyId: string) =>
+    request<Contact[]>('GET', `/v1/crm/agencies/${agencyId}/contacts`),
+  addContact: (
+    agencyId: string,
+    input: { name: string; title?: string; email?: string; phone?: string; isPrimary?: boolean },
+  ) => request<Contact>('POST', `/v1/crm/agencies/${agencyId}/contacts`, input),
+  updateContact: (
+    id: string,
+    input: Partial<{
+      name: string;
+      title: string;
+      email: string;
+      phone: string;
+      isPrimary: boolean;
+    }>,
+  ) => request<Contact>('PATCH', `/v1/crm/contacts/${id}`, input),
+  deleteContact: (id: string) => request<{ deleted: boolean }>('DELETE', `/v1/crm/contacts/${id}`),
+  listInteractions: (agencyId: string) =>
+    request<Interaction[]>('GET', `/v1/crm/agencies/${agencyId}/interactions`),
+  logInteraction: (
+    agencyId: string,
+    input: { type: InteractionType; summary: string; occurredAt?: string },
+  ) => request<Interaction>('POST', `/v1/crm/agencies/${agencyId}/interactions`, input),
 
   // Notifications (derived from the audit stream)
   listNotifications: () => request<Notification[]>('GET', '/v1/notifications'),

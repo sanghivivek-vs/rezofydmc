@@ -17,6 +17,7 @@ import { GdprModule } from '../modules/gdpr/gdpr.module';
 import { OperationsModule } from '../modules/operations/operations.module';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
 import { PlatformModule } from '../modules/platform/platform.module';
+import { CrmModule } from '../modules/agency-crm/crm.module';
 
 export const FEATURE_MODULES = [
   SecurityModule,
@@ -31,4 +32,5 @@ export const FEATURE_MODULES = [
   GdprModule,
   OperationsModule,
   PlatformModule,
+  CrmModule,
 ];

@@ -24,6 +24,7 @@ import { CONSENT_REPOSITORY } from '../../src/modules/gdpr/api/tokens';
 import { BOOKING_REPOSITORY } from '../../src/modules/operations/api/tokens';
 import { NOTIFICATION_REPOSITORY } from '../../src/modules/notifications/api/tokens';
 import { PLATFORM_ADMIN_REPOSITORY } from '../../src/modules/platform/api/tokens';
+import { CRM_REPOSITORY } from '../../src/modules/agency-crm/api/tokens';
 import {
   PrismaService,
   PrismaEnquiryRepository,
@@ -39,6 +40,7 @@ import {
   PrismaBookingRepository,
   PrismaNotificationRepository,
   PrismaPlatformAdminRepository,
+  PrismaCrmRepository,
 } from '../repository/prisma-infra';
 
 const REPOSITORY_TOKENS = [
@@ -55,6 +57,7 @@ const REPOSITORY_TOKENS = [
   BOOKING_REPOSITORY,
   NOTIFICATION_REPOSITORY,
   PLATFORM_ADMIN_REPOSITORY,
+  CRM_REPOSITORY,
 ];
 
 @Global()
@@ -78,6 +81,7 @@ const REPOSITORY_TOKENS = [
     { provide: BOOKING_REPOSITORY, useClass: PrismaBookingRepository },
     { provide: NOTIFICATION_REPOSITORY, useClass: PrismaNotificationRepository },
     { provide: PLATFORM_ADMIN_REPOSITORY, useClass: PrismaPlatformAdminRepository },
+    { provide: CRM_REPOSITORY, useClass: PrismaCrmRepository },
   ],
   exports: [...REPOSITORY_TOKENS, PrismaService],
 })

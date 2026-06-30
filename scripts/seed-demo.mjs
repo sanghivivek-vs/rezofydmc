@@ -102,6 +102,56 @@ async function main() {
   });
   console.log('✓ Messaging channels');
 
+  // Agency CRM — counterparties (names match enquiry agencyIds below, so the
+  // agency detail page surfaces their enquiries).
+  const crmAgencies = [
+    {
+      name: 'MakeMyTrip', type: 'OTA', country: 'India', email: 'partners@makemytrip.example',
+      phone: '+91 124 4628747', website: 'makemytrip.com',
+      contacts: [
+        { name: 'Riya Malhotra', title: 'Partnerships Lead', email: 'riya@makemytrip.example', isPrimary: true },
+        { name: 'Devs Iyer', title: 'Ops Coordinator', phone: '+91 98200 11223' },
+      ],
+      interactions: [
+        { type: 'call', summary: 'Aligned on Goa family package pricing for August.' },
+        { type: 'email', summary: 'Sent revised quote with sea-view upgrade.' },
+      ],
+    },
+    {
+      name: 'Yatra', type: 'OTA', country: 'India', email: 'b2b@yatra.example', website: 'yatra.com',
+      contacts: [{ name: 'Kabir Shah', title: 'Account Manager', email: 'kabir@yatra.example', isPrimary: true }],
+      interactions: [{ type: 'meeting', summary: 'Quarterly review — Kerala honeymoon demand up.' }],
+    },
+    {
+      name: 'Thomas Cook', type: 'Retail', country: 'India', email: 'india@thomascook.example',
+      website: 'thomascook.in',
+      contacts: [{ name: 'Anita Desai', title: 'Senior Travel Consultant', isPrimary: true }],
+      interactions: [{ type: 'note', summary: 'Prefers heritage palace hotels; private guide a must.' }],
+    },
+    {
+      name: 'Expedia', type: 'Wholesaler', country: 'USA', email: 'supply@expedia.example',
+      website: 'expedia.com',
+      contacts: [{ name: 'Mark Reynolds', title: 'Supply Manager', email: 'mark@expedia.example', isPrimary: true }],
+      interactions: [{ type: 'call', summary: 'Golden Triangle booking confirmed; awaiting vouchers.' }],
+    },
+    {
+      name: 'Cleartrip', type: 'OTA', country: 'India', website: 'cleartrip.com',
+      contacts: [{ name: 'Sara Pinto', title: 'Adventure Desk', isPrimary: true }],
+      interactions: [{ type: 'email', summary: 'Himalayan trek enquiry — needs acclimatisation plan.' }],
+    },
+  ];
+  for (const ag of crmAgencies) {
+    const { contacts = [], interactions = [], ...agencyInput } = ag;
+    const created = await call('POST', '/v1/crm/agencies', agencyInput);
+    for (const c of contacts) {
+      await call('POST', `/v1/crm/agencies/${created.id}/contacts`, c);
+    }
+    for (const it of interactions) {
+      await call('POST', `/v1/crm/agencies/${created.id}/interactions`, it);
+    }
+  }
+  console.log(`✓ ${crmAgencies.length} CRM agencies (contacts + interactions)`);
+
   // Suppliers
   const sup = {};
   const suppliers = [

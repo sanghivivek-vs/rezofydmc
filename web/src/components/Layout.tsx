@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import {
   BarChart3,
   Bell,
+  Building2,
   CalendarCheck,
   Inbox,
   LayoutDashboard,
@@ -25,6 +26,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/enquiries', label: 'Enquiries', icon: Inbox },
+  { to: '/agencies', label: 'Agencies', icon: Building2 },
   { to: '/catalog', label: 'Catalog', icon: Package },
   { to: '/bookings', label: 'Bookings', icon: CalendarCheck },
   { to: '/reports', label: 'Reports', icon: BarChart3 },

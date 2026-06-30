@@ -34,6 +34,8 @@ import type { OrgRepository } from '../../src/modules/identity-org/repository/or
 import type { UserRepository } from '../../src/modules/identity-org/repository/user.repository';
 import type { PlatformAdmin } from '../../src/modules/platform/domain/platform-admin';
 import type { PlatformAdminRepository } from '../../src/modules/platform/repository/platform-admin.repository';
+import type { Agency, Contact, Interaction } from '../../src/modules/agency-crm/domain/crm';
+import type { CrmRepository } from '../../src/modules/agency-crm/repository/crm.repository';
 import type { Supplier } from '../../src/modules/catalog/domain/supplier';
 import type { Component } from '../../src/modules/catalog/domain/component';
 import type { Rate } from '../../src/modules/catalog/domain/rate';
@@ -668,6 +670,126 @@ export class PrismaPlatformAdminRepository implements PlatformAdminRepository {
   }
   async count(): Promise<number> {
     return this.prisma.platformAdmin.count();
+  }
+}
+
+// --------------------------------------------------------------------------
+// Agency CRM
+// --------------------------------------------------------------------------
+
+@Injectable()
+export class PrismaCrmRepository implements CrmRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private agencyToDomain(r: Record<string, unknown>): Agency {
+    return {
+      id: r.id as string,
+      orgId: r.orgId as string,
+      name: r.name as string,
+      type: (r.type as Agency['type']) ?? undefined,
+      email: (r.email as string) ?? undefined,
+      phone: (r.phone as string) ?? undefined,
+      country: (r.country as string) ?? undefined,
+      website: (r.website as string) ?? undefined,
+      notes: (r.notes as string) ?? undefined,
+      status: r.status as Agency['status'],
+      createdAt: iso(r.createdAt as Date),
+      updatedAt: iso(r.updatedAt as Date),
+    };
+  }
+  private contactToDomain(r: Record<string, unknown>): Contact {
+    return {
+      id: r.id as string,
+      orgId: r.orgId as string,
+      agencyId: r.agencyId as string,
+      name: r.name as string,
+      title: (r.title as string) ?? undefined,
+      email: (r.email as string) ?? undefined,
+      phone: (r.phone as string) ?? undefined,
+      isPrimary: r.isPrimary as boolean,
+      createdAt: iso(r.createdAt as Date),
+      updatedAt: iso(r.updatedAt as Date),
+    };
+  }
+  private interactionToDomain(r: Record<string, unknown>): Interaction {
+    return {
+      id: r.id as string,
+      orgId: r.orgId as string,
+      agencyId: r.agencyId as string,
+      type: r.type as Interaction['type'],
+      summary: r.summary as string,
+      occurredAt: iso(r.occurredAt as Date),
+      recordedBy: r.recordedBy as string,
+      createdAt: iso(r.createdAt as Date),
+    };
+  }
+
+  async createAgency(ctx: TenantContext, a: Agency): Promise<Agency> {
+    assertSameTenant(ctx, a);
+    const r = await this.prisma.agency.create({
+      data: { ...a, updatedAt: date(a.updatedAt) } as never,
+    });
+    return this.agencyToDomain(r as never);
+  }
+  async updateAgency(ctx: TenantContext, a: Agency): Promise<Agency> {
+    assertSameTenant(ctx, a);
+    const res = await this.prisma.agency.updateMany({
+      where: { id: a.id, orgId: ctx.orgId },
+      data: { ...a, updatedAt: date(a.updatedAt) } as never,
+    });
+    if (res.count === 0) throw new Error(`Agency ${a.id} not found for org ${ctx.orgId}`);
+    return a;
+  }
+  async findAgency(ctx: TenantContext, id: string): Promise<Agency | null> {
+    const r = await this.prisma.agency.findFirst({ where: { id, orgId: ctx.orgId } });
+    return r ? this.agencyToDomain(r as never) : null;
+  }
+  async listAgencies(ctx: TenantContext): Promise<Agency[]> {
+    const rows = await this.prisma.agency.findMany({ where: { orgId: ctx.orgId } });
+    return rows.map((r) => this.agencyToDomain(r as never));
+  }
+
+  async createContact(ctx: TenantContext, c: Contact): Promise<Contact> {
+    assertSameTenant(ctx, c);
+    const r = await this.prisma.contact.create({
+      data: { ...c, updatedAt: date(c.updatedAt) } as never,
+    });
+    return this.contactToDomain(r as never);
+  }
+  async updateContact(ctx: TenantContext, c: Contact): Promise<Contact> {
+    assertSameTenant(ctx, c);
+    const res = await this.prisma.contact.updateMany({
+      where: { id: c.id, orgId: ctx.orgId },
+      data: { ...c, updatedAt: date(c.updatedAt) } as never,
+    });
+    if (res.count === 0) throw new Error(`Contact ${c.id} not found for org ${ctx.orgId}`);
+    return c;
+  }
+  async findContact(ctx: TenantContext, id: string): Promise<Contact | null> {
+    const r = await this.prisma.contact.findFirst({ where: { id, orgId: ctx.orgId } });
+    return r ? this.contactToDomain(r as never) : null;
+  }
+  async listContacts(ctx: TenantContext, agencyId: string): Promise<Contact[]> {
+    const rows = await this.prisma.contact.findMany({ where: { orgId: ctx.orgId, agencyId } });
+    return rows.map((r) => this.contactToDomain(r as never));
+  }
+  async deleteContact(ctx: TenantContext, id: string): Promise<void> {
+    await this.prisma.contact.deleteMany({ where: { id, orgId: ctx.orgId } });
+  }
+
+  async createInteraction(ctx: TenantContext, i: Interaction): Promise<Interaction> {
+    assertSameTenant(ctx, i);
+    const r = await this.prisma.interaction.create({
+      data: { ...i, occurredAt: date(i.occurredAt) } as never,
+    });
+    return this.interactionToDomain(r as never);
+  }
+  async listInteractions(ctx: TenantContext, agencyId: string): Promise<Interaction[]> {
+    const rows = await this.prisma.interaction.findMany({
+      where: { orgId: ctx.orgId, agencyId },
+      orderBy: { occurredAt: 'desc' },
+    });
+    return rows.map((r) => this.interactionToDomain(r as never));
   }
 }
 

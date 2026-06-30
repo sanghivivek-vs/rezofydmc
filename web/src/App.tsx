@@ -7,6 +7,8 @@ import { EnquiriesPage } from './pages/EnquiriesPage';
 import { EnquiryDetailPage } from './pages/EnquiryDetailPage';
 import { QuoteDetailPage } from './pages/QuoteDetailPage';
 import { CatalogPage } from './pages/CatalogPage';
+import { AgenciesPage } from './pages/AgenciesPage';
+import { AgencyDetailPage } from './pages/AgencyDetailPage';
 import { BookingsPage } from './pages/BookingsPage';
 import { BookingDetailPage } from './pages/BookingDetailPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -39,6 +41,8 @@ export function App() {
         <Route path="/enquiries/:id" element={<EnquiryDetailPage />} />
         <Route path="/enquiries/:id/itinerary" element={<ItineraryPage />} />
         <Route path="/enquiries/:id/quotes/:quoteId" element={<QuoteDetailPage />} />
+        <Route path="/agencies" element={<AgenciesPage />} />
+        <Route path="/agencies/:id" element={<AgencyDetailPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/bookings/:id" element={<BookingDetailPage />} />

@@ -37,6 +37,8 @@ import { NOTIFICATION_REPOSITORY } from '@modules/notifications/api/tokens';
 import { InMemoryNotificationRepository } from '@modules/notifications/repository/notification.repository';
 import { PLATFORM_ADMIN_REPOSITORY } from '@modules/platform/api/tokens';
 import { InMemoryPlatformAdminRepository } from '@modules/platform/repository/platform-admin.repository';
+import { CRM_REPOSITORY } from '@modules/agency-crm/api/tokens';
+import { InMemoryCrmRepository } from '@modules/agency-crm/repository/crm.repository';
 
 const REPOSITORY_TOKENS = [
   ENQUIRY_REPOSITORY,
@@ -52,6 +54,7 @@ const REPOSITORY_TOKENS = [
   BOOKING_REPOSITORY,
   NOTIFICATION_REPOSITORY,
   PLATFORM_ADMIN_REPOSITORY,
+  CRM_REPOSITORY,
 ];
 
 @Global()
@@ -70,6 +73,7 @@ const REPOSITORY_TOKENS = [
     { provide: BOOKING_REPOSITORY, useClass: InMemoryBookingRepository },
     { provide: NOTIFICATION_REPOSITORY, useClass: InMemoryNotificationRepository },
     { provide: PLATFORM_ADMIN_REPOSITORY, useClass: InMemoryPlatformAdminRepository },
+    { provide: CRM_REPOSITORY, useClass: InMemoryCrmRepository },
   ],
   exports: REPOSITORY_TOKENS,
 })

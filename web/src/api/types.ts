@@ -253,6 +253,54 @@ export interface BroadcastResult {
   emailsSkipped: number;
 }
 
+// Agency CRM (counterparties + contacts + interaction history)
+export type AgencyType = 'OTA' | 'Retail' | 'Corporate' | 'Wholesaler' | 'Other';
+export type AgencyStatus = 'active' | 'inactive';
+
+export interface Agency {
+  id: string;
+  orgId: string;
+  name: string;
+  type?: AgencyType;
+  email?: string;
+  phone?: string;
+  country?: string;
+  website?: string;
+  notes?: string;
+  status: AgencyStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Contact {
+  id: string;
+  orgId: string;
+  agencyId: string;
+  name: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type InteractionType = 'call' | 'email' | 'meeting' | 'note';
+
+export interface Interaction {
+  id: string;
+  orgId: string;
+  agencyId: string;
+  type: InteractionType;
+  summary: string;
+  occurredAt: string;
+  recordedBy: string;
+  createdAt: string;
+}
+
+export const AGENCY_TYPES: AgencyType[] = ['OTA', 'Retail', 'Corporate', 'Wholesaler', 'Other'];
+export const INTERACTION_TYPES: InteractionType[] = ['call', 'email', 'meeting', 'note'];
+
 // Org (tenant) info as returned by GET /v1/org
 export interface OrgInfo {
   id: string;

@@ -234,6 +234,55 @@ model Notification {
   @@map("notification")
 }
 
+// Agency CRM (Build guide §4) — counterparties, contacts, interaction history.
+model Agency {
+  id        String   @id
+  orgId     String   @map("org_id")
+  name      String
+  type      String?
+  email     String?
+  phone     String?
+  country   String?
+  website   String?
+  notes     String?
+  status    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId])
+  @@map("agency")
+}
+
+model Contact {
+  id        String   @id
+  orgId     String   @map("org_id")
+  agencyId  String   @map("agency_id")
+  name      String
+  title     String?
+  email     String?
+  phone     String?
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([orgId, agencyId])
+  @@map("crm_contact")
+}
+
+model Interaction {
+  id         String   @id
+  orgId      String   @map("org_id")
+  agencyId   String   @map("agency_id")
+  type       String
+  summary    String
+  occurredAt DateTime @map("occurred_at")
+  recordedBy String   @map("recorded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([orgId, agencyId])
+  @@map("crm_interaction")
+}
+
 // Idempotency receipts for inbound webhooks (Build guide §6).
 model WebhookReceipt {
   orgId          String   @map("org_id")
