@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
 import { EnquiryDetailPage } from './pages/EnquiryDetailPage';
+import { QuoteDetailPage } from './pages/QuoteDetailPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { BookingsPage } from './pages/BookingsPage';
 import { BookingDetailPage } from './pages/BookingDetailPage';
@@ -37,6 +38,7 @@ export function App() {
         <Route path="/enquiries" element={<EnquiriesPage />} />
         <Route path="/enquiries/:id" element={<EnquiryDetailPage />} />
         <Route path="/enquiries/:id/itinerary" element={<ItineraryPage />} />
+        <Route path="/enquiries/:id/quotes/:quoteId" element={<QuoteDetailPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/bookings/:id" element={<BookingDetailPage />} />

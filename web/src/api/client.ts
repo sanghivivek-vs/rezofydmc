@@ -149,6 +149,14 @@ export const api = {
   }) => request<Quote>('POST', '/v1/quotes', input),
   sendQuote: (id: string) => request<Quote>('POST', `/v1/quotes/${id}/send`),
   quoteDocumentUrl: (id: string) => `/v1/quotes/${id}/document`,
+  costingSheetUrl: (id: string) => `/v1/quotes/${id}/costing-sheet`,
+  // Fetch a rendered document (HTML) with auth, for inline preview / print.
+  fetchDocument: async (path: string): Promise<string> => {
+    const res = await fetch(path, { headers: { authorization: `Bearer ${getToken() ?? ''}` } });
+    if (!res.ok)
+      throw new ApiError(res.status, 'DOCUMENT', `Failed to load document (${res.status})`);
+    return res.text();
+  },
 
   // Operations
   acceptQuote: (id: string) => request<Booking>('POST', `/v1/quotes/${id}/accept`),
